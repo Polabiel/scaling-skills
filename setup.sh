@@ -2,11 +2,14 @@
 #
 # scaling-skills — instalador das skills Higher Mind + GSD
 #
-# Instala as skills (hm-* + gsd) nos agentes/IDEs detectados:
-#   - Claude Code  -> ~/.claude/skills/            (symlink)
-#   - VS Code      -> ~/.claude/skills/            (symlink — VS Code lê esse diretório)
-#   - Kiro         -> ~/.kiro/skills/              (CÓPIA — Kiro IDE não segue symlinks)
-#   - Opencode     -> ~/.config/opencode/skills/   (symlink)
+# Instala as skills (hm-*) nos agentes/IDEs detectados e o GSD Core da fonte oficial:
+#   - Claude Code  -> ~/.claude/skills/            (symlink) + GSD via npx --claude
+#   - VS Code      -> ~/.claude/skills/            (symlink — VS Code lê esse diretório) + GSD via npx --claude
+#   - Kiro         -> ~/.kiro/skills/              (CÓPIA — Kiro IDE não segue symlinks; GSD não suporta Kiro)
+#   - Opencode     -> ~/.config/opencode/skills/   (symlink) + GSD via npx --opencode
+#
+# O GSD Core é instalado do repositório oficial via npx (@opengsd/gsd-core),
+# nunca a partir da pasta gsd/ deste repositório (que é só referência).
 #
 # Uso:
 #   ./setup [--all] [--claude] [--kiro] [--vscode] [--opencode]
@@ -22,10 +25,13 @@ set -euo pipefail
 # ---------------------------------------------------------------- helpers
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-# descobre skills dinamicamente: toda pasta com SKILL.md na raiz do repo
+# descobre skills dinamicamente: toda pasta com SKILL.md na raiz do repo,
+# exceto gsd/ (que é só referência — o GSD Core vem do repositório oficial via npx)
 SKILLS=()
 for _d in "$SCRIPT_DIR"/*/; do
-  [ -f "$_d/SKILL.md" ] && SKILLS+=("$(basename "$_d")")
+  _name="$(basename "$_d")"
+  [ "$_name" = "gsd" ] && continue
+  [ -f "$_d/SKILL.md" ] && SKILLS+=("$_name")
 done
 
 BOLD=$'\033[1m'
@@ -89,6 +95,31 @@ uninstall_from() {
   [ "$removed" -gt 0 ] && info "$removed skills removidas de $target_dir" || warn "nada para remover em $target_dir"
 }
 
+# ---------------------------------------------------------------- GSD Core (oficial)
+
+# Instala o GSD Core do repositório oficial via npx. O GSD Core não suporta
+# Kiro (sem flag --kiro); VS Code é coberto pelo --claude (lê ~/.claude/skills/).
+install_gsd() {
+  local runtime="$1" label="$2"
+  if ! has_cmd npx; then
+    warn "npx não encontrado — GSD Core não instalado para $label"
+    warn "Instale Node.js 18+ ou veja a instalação manual: https://github.com/open-gsd/gsd-core/blob/next/docs/how-to/install-on-your-runtime.md"
+    return 1
+  fi
+  printf '\n%s[%s]%s  GSD Core (oficial via npx)\n' "$BOLD" "$label" "$RESET"
+  npx -y @opengsd/gsd-core@latest --"$runtime" --global
+}
+
+uninstall_gsd() {
+  local runtime="$1" label="$2"
+  if ! has_cmd npx; then
+    warn "npx não encontrado — GSD Core não desinstalado de $label"
+    return 1
+  fi
+  printf '\n%s[%s]%s  GSD Core (oficial via npx)\n' "$BOLD" "$label" "$RESET"
+  npx -y @opengsd/gsd-core@latest --"$runtime" --global --uninstall
+}
+
 # ---------------------------------------------------------------- detecção
 
 detect() {
@@ -112,6 +143,17 @@ detect() {
   if [ "$kiro" -eq 1 ]; then install_to "Kiro"         "$HOME/.kiro/skills"    "copy"; fi
   if [ "$opencode" -eq 1 ]; then install_to "Opencode" "$HOME/.config/opencode/skills" "$MODE"; fi
 
+  # GSD Core — do repositório oficial via npx (não da pasta gsd/ local)
+  if [ "$claude" -eq 1 ] || [ "$vscode" -eq 1 ]; then
+    install_gsd "claude" "Claude Code / VS Code"
+  fi
+  if [ "$opencode" -eq 1 ]; then
+    install_gsd "opencode" "Opencode"
+  fi
+  if [ "$kiro" -eq 1 ]; then
+    warn "GSD Core não suporta Kiro (sem flag --kiro) — GSD não instalado no Kiro"
+  fi
+
   if [ "$claude" -eq 0 ] && [ "$kiro" -eq 0 ] && [ "$vscode" -eq 0 ] && [ "$opencode" -eq 0 ]; then
     warn "nenhuma ferramenta detectada. Use flags explícitas: --claude --kiro --vscode --opencode"
     return 1
@@ -121,22 +163,26 @@ detect() {
 uninstall_all() {
   if has_cmd claude || [ -d "$HOME/.claude" ]; then
     uninstall_from "Claude Code" "$HOME/.claude/skills"
+    uninstall_gsd "claude" "Claude Code"
   fi
   if has_cmd kiro || [ -d "$HOME/.kiro" ]; then
     uninstall_from "Kiro" "$HOME/.kiro/skills"
   fi
   if has_cmd opencode || [ -d "$HOME/.config/opencode" ]; then
     uninstall_from "Opencode" "$HOME/.config/opencode/skills"
+    uninstall_gsd "opencode" "Opencode"
   fi
 }
 
 list_skills() {
-  printf '%s\n' "${BOLD}Skills disponíveis (${#SKILLS[@]}):${RESET}"
+  printf '%s\n' "${BOLD}Skills deste repositório (${#SKILLS[@]}):${RESET}"
   for name in "${SKILLS[@]}"; do
     local desc
     desc="$(awk -F': *' '/^description:/{sub(/^description: *"?/, ""); sub(/"?$/, ""); print; exit}' "$SCRIPT_DIR/$name/SKILL.md")"
     printf '  %-20s %s\n' "$name" "${DIM}${desc:0:90}...${RESET}"
   done
+  printf '%s\n' "${BOLD}GSD:${RESET}"
+  printf '  %-20s %s\n' "gsd" "${DIM}GSD Core — instalado do repositório oficial via npx (não da pasta gsd/ local)${RESET}"
 }
 
 usage() {
@@ -179,10 +225,10 @@ if [ "${#TARGETS[@]}" -eq 0 ]; then
 else
   for t in "${TARGETS[@]}"; do
     case "$t" in
-      claude)   install_to "Claude Code" "$HOME/.claude/skills" "$MODE" ;;
-      vscode)   install_to "VS Code"     "$HOME/.claude/skills" "$MODE" ;;
-      kiro)     install_to "Kiro"        "$HOME/.kiro/skills"    "copy" ;;
-      opencode) install_to "Opencode"    "$HOME/.config/opencode/skills" "$MODE" ;;
+      claude)   install_to "Claude Code" "$HOME/.claude/skills" "$MODE"; install_gsd "claude" "Claude Code" ;;
+      vscode)   install_to "VS Code"     "$HOME/.claude/skills" "$MODE"; install_gsd "claude" "VS Code" ;;
+      kiro)     install_to "Kiro"        "$HOME/.kiro/skills"    "copy"; warn "GSD Core não suporta Kiro (sem flag --kiro) — GSD não instalado no Kiro" ;;
+      opencode) install_to "Opencode"    "$HOME/.config/opencode/skills" "$MODE"; install_gsd "opencode" "Opencode" ;;
     esac
   done
 fi

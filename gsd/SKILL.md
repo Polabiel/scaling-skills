@@ -23,11 +23,14 @@ Cada milestone repete o mesmo loop, uma fase por vez:
 
 ## Instalação do GSD Core
 
+O GSD Core é instalado **do repositório oficial via npx** — nunca a partir da pasta `gsd/` deste repositório (que é só referência). O `./setup` deste repositório já instala automaticamente para os runtimes detectados; manualmente:
+
 ```bash
-npx @opengsd/gsd-core@latest
+npx @opengsd/gsd-core@latest --claude --global     # Claude Code / VS Code
+npx @opengsd/gsd-core@latest --opencode --global   # Opencode
 ```
 
-O instalador pergunta o runtime (Claude Code, OpenCode, Antigravity CLI, Kimi CLI, Kilo, Codex, Copilot, Cursor, Windsurf…) e se instala global ou localmente. **O instalador é obrigatório para compatibilidade entre runtimes** — não copie arquivos de `agents/` ou `commands/` manualmente.
+O instalador aplica as transformações corretas por runtime (skills, agents, hooks, commands). **O instalador é obrigatório para compatibilidade entre runtimes** — não copie arquivos de `agents/` ou `commands/` manualmente. O GSD Core não suporta Kiro (sem flag `--kiro`).
 
 Sem Node.js ou em outro runtime: veja [Install on your runtime](https://github.com/open-gsd/gsd-core/blob/next/docs/how-to/install-on-your-runtime.md).
 

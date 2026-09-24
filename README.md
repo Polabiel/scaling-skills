@@ -31,13 +31,14 @@ O [`gsd`](gsd/SKILL.md) é uma **skill de referência**: ela não substitui o fr
 
 - **O que é:** framework de context-engineering e spec-driven development que conduz agentes de IA por um loop disciplinado de fases (**Discuss → Plan → Execute → Verify → Ship**), combatendo o *context rot* com subagentes de contexto fresco e verificação real.
 - **Site:** https://opengsd.net/ · **Repositório:** https://github.com/open-gsd/gsd-core
-- **Instalação do GSD Core** (instala as skills/commands oficiais no seu runtime):
+- **Instalação do GSD Core:** o `setup` instala o GSD Core **do repositório oficial via npx** (nunca da pasta `gsd/` local, que é só referência):
 
 ```bash
-npx @opengsd/gsd-core@latest
+npx @opengsd/gsd-core@latest --claude --global     # Claude Code / VS Code
+npx @opengsd/gsd-core@latest --opencode --global   # Opencode
 ```
 
-O instalador pergunta o runtime (Claude Code, OpenCode, Codex, Copilot, Cursor, Windsurf…) e se instala global ou localmente. Depois de instalado: `/gsd-new-project` (projeto novo) ou `/gsd-onboard` (codebase existente).
+O instalador oficial aplica as transformações corretas por runtime (skills, agents, hooks, commands). O GSD Core **não suporta Kiro** (sem flag `--kiro`). Depois de instalado: `/gsd-new-project` (projeto novo) ou `/gsd-onboard` (codebase existente).
 
 > **Como se relacionam:** o **GSD** estrutura *como* o trabalho é conduzido (fases, contexto, verificação); as skills **hm-\*** validam a qualidade do que é construído (segurança, performance, QA, design, dados). Use os dois juntos — ex.: `/hm-validate-all` como gate antes do Ship.
 
@@ -51,12 +52,12 @@ O `setup` detecta quais ferramentas você tem instaladas e instala as skills em 
 
 ### Onde cada ferramenta recebe as skills
 
-| Ferramenta | Diretório | Modo |
-|---|---|---|
-| **Claude Code** | `~/.claude/skills/` | symlink |
-| **VS Code** | `~/.claude/skills/` | symlink |
-| **Kiro** | `~/.kiro/skills/` | cópia |
-| **Opencode** | `~/.config/opencode/skills/` | symlink |
+| Ferramenta | Diretório | Modo | GSD Core |
+|---|---|---|---|
+| **Claude Code** | `~/.claude/skills/` | symlink | via npx (`--claude`) |
+| **VS Code** | `~/.claude/skills/` | symlink | via npx (`--claude`) |
+| **Kiro** | `~/.kiro/skills/` | cópia | não suportado |
+| **Opencode** | `~/.config/opencode/skills/` | symlink | via npx (`--opencode`) |
 
 > **Por que o Kiro usa cópia?** O Kiro IDE não segue symlinks em `~/.kiro/skills/` (issue [kirodotdev/Kiro#6401](https://github.com/kirodotdev/Kiro/issues/6401)). Por isso o setup copia as pastas para o Kiro — se você atualizar o repositório, rode o `setup` de novo para sincronizar.
 >
@@ -65,6 +66,8 @@ O `setup` detecta quais ferramentas você tem instaladas e instala as skills em 
 ---
 
 ## Instalação manual (sem o setup)
+
+> As seções abaixo instalam apenas as skills **hm-\***. O **GSD Core** é sempre instalado do repositório oficial via npx (veja [GSD](#gsd-goal-driven-development)).
 
 ### Claude Code
 
@@ -107,15 +110,15 @@ done
 ## Uso do setup
 
 ```bash
-./setup                  # instala em todas as ferramentas detectadas
+./setup                  # instala em todas as ferramentas detectadas (+ GSD Core via npx)
 ./setup --all            # idem (explícito)
-./setup --claude         # instala só no Claude Code
-./setup --kiro           # instala só no Kiro
-./setup --vscode         # instala só no VS Code
-./setup --opencode       # instala só no Opencode
+./setup --claude         # instala só no Claude Code (+ GSD Core via npx)
+./setup --kiro           # instala só no Kiro (GSD não suportado)
+./setup --vscode         # instala só no VS Code (+ GSD Core via npx --claude)
+./setup --opencode       # instala só no Opencode (+ GSD Core via npx)
 ./setup --copy           # força cópia em vez de symlink em todos os destinos
 ./setup --list           # lista as skills disponíveis
-./setup --uninstall      # remove as skills instaladas
+./setup --uninstall      # remove as skills instaladas (+ GSD Core via npx --uninstall)
 ./setup --help           # ajuda
 ```
 
