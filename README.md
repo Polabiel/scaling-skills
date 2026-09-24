@@ -2,7 +2,7 @@
 
 Minhas skills baseadas na Filosofia Higher Mind e nas minhas experiências com código como dev.
 
-Coleção de **15 skills** para agentes de IA (padrão [Agent Skills](https://agentskills.io) — uma pasta com `SKILL.md`):
+Coleção de **16 skills** para agentes de IA (padrão [Agent Skills](https://agentskills.io) — uma pasta com `SKILL.md`):
 
 | Skill | O que faz |
 |---|---|
@@ -21,8 +21,25 @@ Coleção de **15 skills** para agentes de IA (padrão [Agent Skills](https://ag
 | [`hm-sequoia`](hm-sequoia/SKILL.md) | Valida se a direção estratégica está alinhada com o futuro |
 | [`hm-ux-flow`](hm-ux-flow/SKILL.md) | Validação de fluxo cognitivo end-to-end (3 tipos de friction) |
 | [`hm-validate-all`](hm-validate-all/SKILL.md) | Orquestrador pré-ship que dispara as 12 skills de validação em ondas |
+| [`gsd`](gsd/SKILL.md) | Referência de aplicação do GSD (Goal-Driven Development) — loop de fases Discuss → Plan → Execute → Verify → Ship |
 
 ---
+
+## GSD (Goal-Driven Development)
+
+O [`gsd`](gsd/SKILL.md) é uma **skill de referência**: ela não substitui o framework, mas ensina o agente a aplicar a metodologia GSD e instalar o GSD Core no runtime atual.
+
+- **O que é:** framework de context-engineering e spec-driven development que conduz agentes de IA por um loop disciplinado de fases (**Discuss → Plan → Execute → Verify → Ship**), combatendo o *context rot* com subagentes de contexto fresco e verificação real.
+- **Site:** https://opengsd.net/ · **Repositório:** https://github.com/open-gsd/gsd-core
+- **Instalação do GSD Core** (instala as skills/commands oficiais no seu runtime):
+
+```bash
+npx @opengsd/gsd-core@latest
+```
+
+O instalador pergunta o runtime (Claude Code, OpenCode, Codex, Copilot, Cursor, Windsurf…) e se instala global ou localmente. Depois de instalado: `/gsd-new-project` (projeto novo) ou `/gsd-onboard` (codebase existente).
+
+> **Como se relacionam:** o **GSD** estrutura *como* o trabalho é conduzido (fases, contexto, verificação); as skills **hm-\*** validam a qualidade do que é construído (segurança, performance, QA, design, dados). Use os dois juntos — ex.: `/hm-validate-all` como gate antes do Ship.
 
 ## Instalação (1 comando)
 
@@ -53,7 +70,7 @@ O `setup` detecta quais ferramentas você tem instaladas e instala as skills em 
 
 ```bash
 git clone https://github.com/Polabiel/scaling-skills ~/.claude/skills/scaling-skills
-for d in ~/.claude/skills/scaling-skills/hm-*/; do
+for d in ~/.claude/skills/scaling-skills/*/; do
   ln -s "$d" ~/.claude/skills/"$(basename "$d")"
 done
 ```
@@ -62,7 +79,7 @@ done
 
 ```bash
 git clone https://github.com/Polabiel/scaling-skills ~/.kiro/skills/scaling-skills
-cp -R ~/.kiro/skills/scaling-skills/hm-* ~/.kiro/skills/
+cp -R ~/.kiro/skills/scaling-skills/*/ ~/.kiro/skills/
 ```
 
 ### VS Code
@@ -71,7 +88,7 @@ Igual ao Claude Code (o VS Code lê `~/.claude/skills/`):
 
 ```bash
 git clone https://github.com/Polabiel/scaling-skills ~/.claude/skills/scaling-skills
-for d in ~/.claude/skills/scaling-skills/hm-*/; do
+for d in ~/.claude/skills/scaling-skills/*/; do
   ln -s "$d" ~/.claude/skills/"$(basename "$d")"
 done
 ```
@@ -80,7 +97,7 @@ done
 
 ```bash
 git clone https://github.com/Polabiel/scaling-skills ~/.config/opencode/skills/scaling-skills
-for d in ~/.config/opencode/skills/scaling-skills/hm-*/; do
+for d in ~/.config/opencode/skills/scaling-skills/*/; do
   ln -s "$d" ~/.config/opencode/skills/"$(basename "$d")"
 done
 ```

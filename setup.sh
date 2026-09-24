@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #
-# scaling-skills — instalador das skills Higher Mind
+# scaling-skills — instalador das skills Higher Mind + GSD
 #
-# Instala as skills (hm-*) nos agentes/IDEs detectados:
+# Instala as skills (hm-* + gsd) nos agentes/IDEs detectados:
 #   - Claude Code  -> ~/.claude/skills/            (symlink)
 #   - VS Code      -> ~/.claude/skills/            (symlink — VS Code lê esse diretório)
 #   - Kiro         -> ~/.kiro/skills/              (CÓPIA — Kiro IDE não segue symlinks)
@@ -22,9 +22,10 @@ set -euo pipefail
 # ---------------------------------------------------------------- helpers
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# descobre skills dinamicamente: toda pasta com SKILL.md na raiz do repo
 SKILLS=()
-for _d in "$SCRIPT_DIR"/hm-*/; do
-  [ -d "$_d" ] && SKILLS+=("$(basename "$_d")")
+for _d in "$SCRIPT_DIR"/*/; do
+  [ -f "$_d/SKILL.md" ] && SKILLS+=("$(basename "$_d")")
 done
 
 BOLD=$'\033[1m'
