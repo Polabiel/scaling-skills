@@ -303,12 +303,13 @@ doctor() {
     printf "npx: disponível\n"
     printf "Node.js: %s\n" "$(node --version 2>/dev/null || printf "ausente")"
     printf "npm: %s\n" "$(npm --version 2>/dev/null || printf "ausente")"
-    local major
+    local major npm_major
     major="$(node_major_version)"
-    if [ "$major" -ge 22 ]; then
-      printf "%s\n" "Node.js atende ao requisito >= 22"
+    npm_major="$(npm_major_version)"
+    if [ "$major" -ge 22 ] && [ "$npm_major" -ge 10 ]; then
+      printf "%s\n" "Node.js >= 22 e npm >= 10 atendem ao requisito do GSD Core"
     else
-      printf "%s\n" "Node.js NÃO atende ao requisito >= 22"
+      printf "Requisito do GSD Core NÃO atendido: Node.js %s / npm %s (necessário >=22 / >=10)\n" "$major" "$npm_major"
     fi
   else
     printf "%s\n" "npx: não encontrado"
