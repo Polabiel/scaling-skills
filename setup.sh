@@ -7,13 +7,14 @@
 #   VS Code/Copilot -> ~/.copilot/skills/
 #   Kiro            -> ~/.kiro/skills/ (cópia)
 #   Opencode        -> ~/.config/opencode/skills/
+#   Codex           -> ${CODEX_HOME:-~/.codex}/skills/
 #
 # O GSD Core não é uma skill deste repositório.
 # O setup chama o instalador oficial @opengsd/gsd-core via npx
 # com o runtime correto para cada ambiente detectado.
 #
 # Uso:
-#   ./setup [--all] [--claude] [--vscode] [--kiro] [--opencode]
+#   ./setup [--all] [--claude] [--vscode] [--kiro] [--opencode] [--codex]
 #   ./setup --doctor
 #   ./setup --copy
 #   ./setup --uninstall
@@ -75,6 +76,10 @@ is_kiro_detected() {
 
 is_opencode_detected() {
   has_cmd opencode || [ -d "$HOME/.config/opencode" ]
+}
+
+is_codex_detected() {
+  has_cmd codex || [ -d "${CODEX_HOME:-$HOME/.codex}" ]
 }
 
 validate_skill() {
@@ -328,6 +333,10 @@ run_install_target() {
       install_to "Opencode" "$HOME/.config/opencode/skills" "$MODE"
       install_gsd "opencode" "Opencode" || true
       ;;
+    codex)
+      install_to "Codex" "${CODEX_HOME:-$HOME/.codex}/skills" "$MODE"
+      install_gsd "codex" "Codex" || true
+      ;;
     *)
       printf "runtime desconhecido: %s\n" "$target"
       return 1
@@ -362,6 +371,12 @@ detect_and_install() {
     found=1
   fi
 
+  if is_codex_detected; then
+    printf "%s\n" "Codex detectado"
+    run_install_target "codex"
+    found=1
+  fi
+
   if [ "$found" -eq 0 ]; then
     printf "%s\n" "Nenhum runtime detectado. Use --claude, --vscode, --kiro ou --opencode."
     return 1
@@ -382,6 +397,7 @@ doctor() {
   is_vscode_detected && printf "%s\n" "VS Code/Copilot: detectado" || printf "%s\n" "VS Code/Copilot: não detectado"
   is_kiro_detected && printf "%s\n" "Kiro: detectado" || printf "%s\n" "Kiro: não detectado"
   is_opencode_detected && printf "%s\n" "Opencode: detectado" || printf "%s\n" "Opencode: não detectado"
+  is_codex_detected && printf "%s\n" "Codex: detectado" || printf "%s\n" "Codex: não detectado"
 
   printf "\n%s\n" "GSD Core:"
   if has_cmd npx; then
@@ -405,6 +421,7 @@ doctor() {
   printf "%s\n" "~/.copilot/skills/         -> VS Code/Copilot"
   printf "%s\n" "~/.kiro/skills/            -> Kiro"
   printf "%s\n" "~/.config/opencode/skills/ -> Opencode"
+  printf "%s\n" "${CODEX_HOME:-$HOME/.codex}/skills/ -> Codex"
 }
 
 usage() {
@@ -418,6 +435,7 @@ while [ "$#" -gt 0 ]; do
     --vscode)    ACTION="install"; TARGETS="$TARGETS vscode" ;;
     --kiro)      ACTION="install"; TARGETS="$TARGETS kiro" ;;
     --opencode)  ACTION="install"; TARGETS="$TARGETS opencode" ;;
+    --codex)     ACTION="install"; TARGETS="$TARGETS codex" ;;
     --copy)      MODE="copy" ;;
     --doctor)    ACTION="doctor" ;;
     --uninstall) ACTION="uninstall" ;;
