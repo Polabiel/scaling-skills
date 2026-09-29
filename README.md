@@ -12,7 +12,7 @@ Coleção de **18 skills** para agentes de IA (padrão [Agent Skills](https://ag
 | [`hm-data-integrity`](hm-data-integrity/SKILL.md) | Dados sagrados — backup, migrations, operações destrutivas, DR, compliance |
 | [`hm-deploy`](hm-deploy/SKILL.md) | Validação de deploy e infraestrutura |
 | [`hm-designer`](hm-designer/SKILL.md) | Validação visual de interface (sofisticação, pixel-perfect, dark-first) |
-| [`hm-engineer`](hm-engineer/SKILL.md) | Validação de código senior-level pré-ship (baseline, OWASP, custo, resiliência) |
+| [`hm-engineer`](hm-engineer/SKILL.md) | Validação de código senior-level pré-ship (baseline, erros, OWASP, custo, resiliência e observabilidade) |
 | [`hm-error-feedback`](hm-error-feedback/SKILL.md) | Converte erros reais em feedback visual fiel, claro, acionável e seguro |
 | [`hm-init`](hm-init/SKILL.md) | Início de projeto novo (stack, infra Docker-first, segurança day-1) |
 | [`hm-llm-guardrails`](hm-llm-guardrails/SKILL.md) | 14 patterns obrigatórios para apps que integram LLM em produção |
