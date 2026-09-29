@@ -205,11 +205,54 @@ Teste:
 - duplicate webhook;
 - reconnect;
 - retry;
-- reprocessamento de fila.
+- reprocessamento de fila;
+- entrega fora de ordem;
+- mensagens entregues mais de uma vez.
 
 Toda transição deve responder o que acontece com evento repetido.
 
-## 10. Persistência de estado
+Quando o transporte é at-least-once, a máquina precisa tolerar duplicidade sem produzir efeitos duplicados.
+
+## 10. Condições excepcionais
+
+Modele explicitamente as condições que podem interromper uma operação:
+
+- timeout;
+- cancelamento;
+- conexão interrompida;
+- resposta parcial;
+- payload malformado;
+- dependência indisponível;
+- dependência lenta;
+- fila saturada;
+- rate limit externo;
+- retry storm;
+- operação concluída sem resposta ao cliente.
+
+Toda condição excepcional precisa terminar em um estado conhecido ou explicitamente **unknown**.
+
+Não transformar:
+
+~~~text
+submitting
+→ timeout
+→ failed
+~~~
+
+automaticamente, se a operação pode ter sido concluída no outro lado.
+
+Nesse caso, prefira:
+
+~~~text
+submitting
+→ unknown
+→ querying-status
+→ succeeded
+~~~
+
+quando o domínio permitir reconciliação.
+
+## 11. Persistência de estado
 
 Estados importantes não podem existir somente em memória quando o usuário depende deles após:
 - refresh;
