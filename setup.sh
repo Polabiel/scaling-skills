@@ -271,9 +271,13 @@ node_major_version() {
   node -p 'process.versions.node.split(".")[0]' 2>/dev/null || printf "0"
 }
 
+npm_major_version() {
+  npm --version 2>/dev/null | cut -d. -f1 || printf "0"
+}
+
 install_gsd() {
   local runtime="$1" label="$2"
-  local major
+  local major npm_major
 
   if ! has_cmd npx; then
     printf "GSD Core pendente para %s: npx não encontrado (OS: %s).\n" "$label" "$OS_NAME"
@@ -281,8 +285,9 @@ install_gsd() {
   fi
 
   major="$(node_major_version)"
-  if [ "$major" -lt 22 ]; then
-    printf "GSD Core pendente para %s: Node.js >= 22 necessário; encontrado %s.\n" "$label" "$major"
+  npm_major="$(npm_major_version)"
+  if [ "$major" -lt 22 ] || [ "$npm_major" -lt 10 ]; then
+    printf "GSD Core pendente para %s: requer Node.js >= 22 e npm >= 10; encontrados Node.js %s e npm %s.\n" "$label" "$major" "$npm_major"
     return 1
   fi
 
@@ -292,11 +297,12 @@ install_gsd() {
 
 uninstall_gsd() {
   local runtime="$1" label="$2"
-  local major
+  local major npm_major
 
   has_cmd npx || return 1
   major="$(node_major_version)"
-  [ "$major" -ge 22 ] || return 1
+  npm_major="$(npm_major_version)"
+  [ "$major" -ge 22 ] && [ "$npm_major" -ge 10 ] || return 1
 
   printf "\nGSD Core uninstall -> %s\n" "$label"
   npx --yes @opengsd/gsd-core@latest "--$runtime" --global --uninstall
