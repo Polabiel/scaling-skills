@@ -38,7 +38,6 @@ Coleção de **31 skills** para agentes de IA (padrão [Agent Skills](https://ag
 | [`hm-ux-flow`](hm-ux-flow/SKILL.md) | Validação de fluxo cognitivo end-to-end (3 tipos de friction) |
 | [`hm-validate-all`](hm-validate-all/SKILL.md) | Orquestrador pré-ship que dispara as skills de validação em ondas |
 ---
-
 ## Instalação (1 comando)
 
 ```bash
@@ -49,12 +48,12 @@ O `setup` detecta o sistema operacional e os runtimes instalados e instala as sk
 
 ### Onde cada ferramenta recebe as skills
 
-| Ferramenta | Diretório | Modo | GSD Core |
+| Ferramenta | Diretório | Modo |
 |---|---|---|---|
-| **Claude Code** | `~/.claude/skills/` | symlink | via npx (`--claude`) |
-| **VS Code/Copilot** | `~/.copilot/skills/` | symlink | via runtime `--copilot` |
-| **Kiro** | `~/.kiro/skills/` | cópia | não suportado |
-| **Opencode** | `~/.config/opencode/skills/` | symlink | via npx (`--opencode`) |
+| **Claude Code** | `~/.claude/skills/` | symlink |
+| **VS Code/Copilot** | `~/.copilot/skills/` | symlink |
+| **Kiro** | `~/.kiro/skills/` | cópia |
+| **Opencode** | `~/.config/opencode/skills/` | symlink |
 
 > **Por que o Kiro usa cópia?** O Kiro IDE não segue symlinks em `~/.kiro/skills/` (issue [kirodotdev/Kiro#6401](https://github.com/kirodotdev/Kiro/issues/6401)). Por isso o setup copia as pastas para o Kiro — se você atualizar o repositório, rode o `setup` de novo para sincronizar.
 >
@@ -64,7 +63,7 @@ O `setup` detecta o sistema operacional e os runtimes instalados e instala as sk
 
 ## Instalação manual (sem o setup)
 
-> As seções abaixo instalam apenas as skills **hm-\***. O **GSD Core** é sempre instalado do repositório oficial via npx (veja [GSD](#gsd-goal-driven-development)).
+> As seções abaixo instalam apenas as skills deste repositório.
 
 ### Claude Code
 
@@ -107,19 +106,20 @@ done
 ## Uso do setup
 
 ```bash
-./setup                  # instala em todas as ferramentas detectadas (+ GSD Core via npx)
-./setup --all            # idem (explícito)
-./setup --claude         # instala só no Claude Code (+ GSD Core via npx)
-./setup --kiro           # instala só no Kiro (GSD não suportado)
-./setup --vscode         # instala só no VS Code (+ GSD Core via npx --claude)
-./setup --opencode       # instala só no Opencode (+ GSD Core via npx)
-./setup --copy           # força cópia em vez de symlink em todos os destinos
-./setup --list           # lista as skills disponíveis
-./setup --uninstall      # remove as skills instaladas (+ GSD Core via npx --uninstall)
-./setup --help           # ajuda
+./setup
+./setup --all
+./setup --claude
+./setup --vscode
+./setup --kiro
+./setup --opencode
+./setup --copy
+./setup --doctor
+./setup --list
+./setup --uninstall
+./setup --help
 ```
 
-> **Atualizar skills:** `cd ~/.claude/skills/scaling-skills && git pull && ./setup`\n> Para validar antes de alterar os destinos: `./setup --doctor`.
+> Use `./setup --doctor` para validar frontmatter, runtimes e pré-requisitos sem instalar.
 
 ---
 
