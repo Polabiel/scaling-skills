@@ -1,0 +1,39 @@
+# CLAUDE.md — template
+
+Use este arquivo como base para o CLAUDE.md de um projeto que utiliza o repositório scaling-skills.
+
+## Princípio
+
+Leia o código real antes de concluir como o sistema funciona. Use a skill especializada correspondente ao problema em vez de duplicar regras entre prompts.
+
+## Skills
+
+As skills ficam disponíveis globalmente em ~/.claude/skills/.
+
+Use, conforme o contexto:
+
+- /hm-engineer — implementação e auditoria técnica
+- /hm-qa — qualidade e validação
+- /hm-performance — profiling e gargalos
+- /hm-security — segurança
+- /hm-logger — observabilidade
+- /hm-incident — incidentes
+- /pm-technical — gestão técnica de produto
+- /pm-innovation — inovação técnica e evolução preventiva
+
+## Comportamento esperado
+
+1. Investigue antes de responder sobre código ou arquitetura.
+2. Faça a menor mudança correta para resolver o problema.
+3. Preserve contratos, dados e comportamento existente.
+4. Meça performance antes de afirmar que algo está lento ou rápido.
+5. Valide a mudança com testes ou evidência apropriada.
+6. Não invente arquivos, APIs, métricas ou comportamentos não observados.
+
+## Ship
+
+Quando uma alteração estiver pronta para produção, use /hm-validate-all quando aplicável e corrija findings relevantes antes do merge.
+
+## Escopo
+
+Este template orienta o projeto; as regras detalhadas permanecem nas skills do scaling-skills.
