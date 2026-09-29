@@ -37,7 +37,7 @@ for skill in "${SKILLS[@]}"; do
   [[ "$line3" =~ ^description:[[:space:]] ]] || fail "$skill: description ausente"
   [ "$line4" = "---" ] || fail "$skill: frontmatter não termina na quarta linha"
 
-  [[ "$skill" =~ ^[a-z0-9-]+$ ]] || fail "$skill: nome incompatível com Agent Skills"
+  [[ "$skill" =~ ^[a-z0-9]+(-[a-z0-9]+)*$ ]] || fail "$skill: nome incompatível com Agent Skills"
   [ "${#skill}" -le 64 ] || fail "$skill: nome excede 64 caracteres"
 
   desc="${line3#description:}"
@@ -94,4 +94,44 @@ done
 [ "$copilot_count" -eq "${#SKILLS[@]}" ] || fail "VS Code/Copilot discovery: esperado ${#SKILLS[@]}, encontrado $copilot_count"
 pass "VS Code/Copilot discovery contract: $copilot_count skills"
 
-pass "Agent Skills contract válido para ${#SKILLS[@]} skills"
+OPENCODE_ROOT="$TMP_ROOT/.config/opencode/skills"
+mkdir -p "$OPENCODE_ROOT"
+
+for skill in "${SKILLS[@]}"; do
+  ln -s "$ROOT/$skill" "$OPENCODE_ROOT/$skill"
+done
+
+for skill in "${SKILLS[@]}"; do
+  [ -f "$OPENCODE_ROOT/$skill/SKILL.md" ] || fail "OpenCode discovery: $skill não está acessível"
+done
+
+opencode_count=0
+for skill in "${SKILLS[@]}"; do
+  [ -f "$OPENCODE_ROOT/$skill/SKILL.md" ] || fail "OpenCode discovery: $skill não está acessível"
+  opencode_count=$((opencode_count + 1))
+done
+
+[ "$opencode_count" -eq "${#SKILLS[@]}" ] || fail "OpenCode discovery: esperado ${#SKILLS[@]}, encontrado $opencode_count"
+pass "OpenCode discovery contract: $opencode_count skills"
+
+CODEX_ROOT="$TMP_ROOT/.codex/skills"
+mkdir -p "$CODEX_ROOT"
+
+for skill in "${SKILLS[@]}"; do
+  ln -s "$ROOT/$skill" "$CODEX_ROOT/$skill"
+done
+
+for skill in "${SKILLS[@]}"; do
+  [ -f "$CODEX_ROOT/$skill/SKILL.md" ] || fail "Codex discovery: $skill não está acessível"
+done
+
+codex_count=0
+for skill in "${SKILLS[@]}"; do
+  [ -f "$CODEX_ROOT/$skill/SKILL.md" ] || fail "Codex discovery: $skill não está acessível"
+  codex_count=$((codex_count + 1))
+done
+
+[ "$codex_count" -eq "${#SKILLS[@]}" ] || fail "Codex discovery: esperado ${#SKILLS[@]}, encontrado $codex_count"
+pass "Codex discovery contract: $codex_count skills"
+
+pass "Agent Skills discovery contract válido para Claude Code, VS Code/Copilot, OpenCode e Codex — ${#SKILLS[@]} skills"
