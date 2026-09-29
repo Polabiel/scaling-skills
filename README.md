@@ -2,16 +2,18 @@
 
 Minhas skills baseadas na Filosofia Higher Mind e nas minhas experiências com código como dev.
 
-Coleção de **16 skills** para agentes de IA (padrão [Agent Skills](https://agentskills.io) — uma pasta com `SKILL.md`):
+Coleção de **18 skills** para agentes de IA (padrão [Agent Skills](https://agentskills.io) — uma pasta com `SKILL.md`):
 
 | Skill | O que faz |
 |---|---|
 | [`hm-align`](hm-align/SKILL.md) | Valida se o que está sendo construído é a coisa certa (visão, timing, valor real) |
 | [`hm-cli`](hm-cli/SKILL.md) | Construção de CLI no padrão Higher Mind (terminal como produto cinematográfico) |
+| [`hm-conversion`](hm-conversion/SKILL.md) | Design de conversão baseado em evidências, fricção, intenção e validação |
 | [`hm-data-integrity`](hm-data-integrity/SKILL.md) | Dados sagrados — backup, migrations, operações destrutivas, DR, compliance |
 | [`hm-deploy`](hm-deploy/SKILL.md) | Validação de deploy e infraestrutura |
 | [`hm-designer`](hm-designer/SKILL.md) | Validação visual de interface (sofisticação, pixel-perfect, dark-first) |
 | [`hm-engineer`](hm-engineer/SKILL.md) | Validação de código senior-level pré-ship (baseline, OWASP, custo, resiliência) |
+| [`hm-error-feedback`](hm-error-feedback/SKILL.md) | Converte erros reais em feedback visual fiel, claro, acionável e seguro |
 | [`hm-init`](hm-init/SKILL.md) | Início de projeto novo (stack, infra Docker-first, segurança day-1) |
 | [`hm-llm-guardrails`](hm-llm-guardrails/SKILL.md) | 14 patterns obrigatórios para apps que integram LLM em produção |
 | [`hm-logger`](hm-logger/SKILL.md) | Logging estruturado com traceId, usuário e contexto HTTP |
