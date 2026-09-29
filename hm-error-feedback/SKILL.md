@@ -1,4 +1,3 @@
-
 ---
 name: hm-error-feedback
 description: Converte erros reais do sistema em feedback visual fiel, claro, acionável e acessível para o usuário. Use junto com hm-qa, hm-engineer e hm-logger ao corrigir ou criar estados de erro em formulários, modais, páginas, toasts, banners, uploads, pagamentos, integrações, streaming, jobs e fluxos assíncronos. A skill exige que a UI represente corretamente o estado real da operação, traduza a causa conhecida para a linguagem do usuário, preserve contexto e dados, indique recuperação quando possível e nunca exponha detalhes técnicos ou sensíveis desnecessários.
