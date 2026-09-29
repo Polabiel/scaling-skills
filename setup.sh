@@ -29,7 +29,7 @@ TARGETS=""
 OS_NAME="unknown"
 
 skill_files() {
-  find "$SCRIPT_DIR" -mindepth 2 -maxdepth 2 -type f -name "SKILL.md" ! -path "$SCRIPT_DIR/gsd/*" | sort
+  find "$SCRIPT_DIR" -mindepth 2 -maxdepth 2 -type f -name "SKILL.md" | sort
 }
 
 skill_count() {
