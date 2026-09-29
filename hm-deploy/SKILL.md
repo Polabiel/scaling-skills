@@ -64,6 +64,9 @@ Se o projeto é novo, escolher ports que não colidem.
 - Migrations estão em ordem e não têm gaps?
 - Nenhuma migration é destrutiva sem ser reversível?
 - Schema atual reflete todas as migrations aplicadas?
+- Durante rollout, versões antigas e novas conseguem coexistir com o schema atual quando necessário?
+- Ordem de deploy e migration evita quebrar a versão anterior?
+- Rollback do código continua possível sem exigir rollback destrutivo do banco?
 - Conexão do app com o banco funciona logo após subir?
 
 ### 4. Health & Monitoramento
@@ -99,6 +102,21 @@ Se qualquer passo extra é necessário, está faltando documentação ou automa�
 - O setup é um comando (ou no máximo dois)?
 - Scripts de desenvolvimento estão documentados? (como rodar testes, como rebuildar, etc)
 - Makefile ou scripts de conveniência existem se necessário?
+
+### 8. Rollout & Runtime
+
+Antes de considerar um deploy seguro:
+
+- processo responde corretamente ao SIGTERM;
+- requests em andamento têm tempo para terminar ou são canceladas de forma controlada;
+- workers não perdem jobs silenciosamente;
+- filas não duplicam processamento durante restart;
+- nova versão e versão anterior conseguem coexistir durante rollout;
+- config nova tem default seguro;
+- feature flag tem estado de fallback;
+- health check diferencia processo vivo de serviço pronto;
+- startup falha rápido quando configuração obrigatória está ausente;
+- shutdown não deixa conexões, streams ou tasks abertas.
 
 ## Formato do output
 
