@@ -182,7 +182,18 @@ Para CADA endpoint da API, verificar:
 - Logs protegidos contra tampering?
 - Alertas configurados pra eventos anomalos?
 
-### A10: Server-Side Request Forgery (SSRF)
+### A10: Mishandling of Exceptional Conditions
+- Exceções tratadas no ponto onde a condição ocorre, não somente em um catch genérico no topo?
+- Timeout, cancelamento, conexão interrompida e resposta parcial têm comportamento definido?
+- Falha de dependência, memória, disco, fila ou rate limit não deixa o sistema em estado indefinido?
+- Transações parciais fazem rollback ou falham de forma segura (fail closed)?
+- Operações que podem ter sido concluídas não são marcadas como failed sem reconciliação?
+- Eventos excepcionais têm logging e alertas quando o impacto justificar?
+- Existe tratamento global apenas como última barreira, sem substituir o tratamento local necessário?
+
+Fonte: OWASP Top 10:2025 — A10 Mishandling of Exceptional Conditions: https://owasp.org/Top10/2025/A10_2025-Mishandling_of_Exceptional_Conditions/
+
+### SSRF
 - URLs de requests externos validadas contra allowlist?
 - Sem user input direto em URLs de requests internos?
 - Metadata endpoints bloqueados (169.254.169.254, fd00::, localhost)?
@@ -308,6 +319,15 @@ npx depcheck  # encontra deps não usadas
 - Último release da dependência critica tem menos de 12 meses?
 - SBOM (Software Bill of Materials) gerado?
 - Assinatura de artefatos de build (cosign/sigstore)?
+- CI/CD, IDEs, repositorios, registries e ferramentas de build têm mudanças rastreáveis?
+- GitHub Actions / CI usa permissões mínimas e proteção de branches adequada?
+- Actions, imagens base e componentes críticos são obtidos de fontes confiáveis e versões verificáveis?
+- Artefatos de build têm provenance/integridade verificável quando aplicável?
+- Builds são imutáveis ou existe risco de reconstruir artefatos diferentes a partir do mesmo source?
+- Dependências e tooling têm processo de atualização e substituição quando ficam sem suporte?
+- Rollout de mudanças críticas da cadeia evita promover tudo de uma vez quando o risco justificar staged rollout?
+
+Fonte: OWASP Top 10:2025 — A03 Software Supply Chain Failures: https://owasp.org/Top10/2025/A03_2025-Software_Supply_Chain_Failures/
 
 ---
 
