@@ -1,6 +1,6 @@
 ---
 name: pm-innovation
-description: Gestão de inovação técnica e evolução preventiva do produto: arquitetura, performance antecipada, capacidade, observabilidade, automação, experimentos, protótipos, modernização e redução de riscos futuros. Use quando o time de inovação precisa investigar problemas que o time de produto não consegue priorizar no fluxo normal, validar novas abordagens técnicas ou criar capacidade antes da demanda chegar. Complementa pm-technical, pm-data, pm-strategy, hm-engineer, hm-performance, hm-logger e hm-incident.
+description: "Gestão de inovação técnica e evolução preventiva do produto: arquitetura, performance antecipada, capacidade, observabilidade, automação, experimentos, protótipos, modernização e redução de riscos futuros. Use quando o time de inovação precisa investigar problemas que o time de produto não consegue priorizar no fluxo normal, validar novas abordagens técnicas ou criar capacidade antes da demanda chegar. Complementa pm-technical, pm-data, pm-strategy, hm-engineer, hm-performance, hm-logger e hm-incident."
 ---
 
 # /pm-innovation — Inovação Técnica e Evolução Preventiva (v1)
