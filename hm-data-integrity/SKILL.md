@@ -61,6 +61,11 @@ A única perda aceitável de dado e a explicitamente autorizada pelo owner. Tudo
 | Migration testada em copia de prod | Antes de aplicar em prod real |
 | Rollback plan documentado | Mesmo que roll-forward only, plano se algo der errado |
 | Schema journal sincronizado | Drizzle/Prisma journal bate com estado real do DB? |
+| Backwards compatibility | Schema novo suporta a versão anterior durante rollout quando necessário |
+| Expand → migrate → contract | Usado quando uma mudança exige coexistência entre versões |
+| Rollback de código independente do rollback destrutivo do banco | Versão anterior continua executável no schema atual |
+| Dataset representativo | Migration testada com dados que reproduzem tamanho e formatos reais |
+| Integridade pós-migration | Constraints, índices e dados existentes continuam consistentes |
 
 **Anti-patterns:**
 - ALTER COLUMN sem default/backfill (NOT NULL em coluna nova com rows existentes)
