@@ -10,28 +10,26 @@ Coleção de **25 skills** para agentes de IA (padrão [Agent Skills](https://ag
 | [`hm-align`](hm-align/SKILL.md) | Valida se o que está sendo construído é a coisa certa (visão, timing, valor real) |
 | [`hm-analytics`](hm-analytics/SKILL.md) | Product analytics, funis, ativação, retenção, cohorts e experimentos |
 | [`hm-api-contract`](hm-api-contract/SKILL.md) | Valida contratos de API, schemas, erros, compatibilidade e idempotência |
-| [`hm-conversion`](hm-conversion/SKILL.md) | Design de conversão baseado em evidências, fricção, intenção e validação |
 | [`hm-cli`](hm-cli/SKILL.md) | Construção de CLI no padrão Higher Mind (terminal como produto cinematográfico) |
+| [`hm-conversion`](hm-conversion/SKILL.md) | Design de conversão baseado em evidências, fricção, intenção e validação |
 | [`hm-copy`](hm-copy/SKILL.md) | UX writing e microcopy orientados a clareza, ação e consistência |
 | [`hm-data-integrity`](hm-data-integrity/SKILL.md) | Dados sagrados — backup, migrations, operações destrutivas, DR, compliance |
 | [`hm-deploy`](hm-deploy/SKILL.md) | Validação de deploy e infraestrutura |
 | [`hm-designer`](hm-designer/SKILL.md) | Validação visual de interface (sofisticação, pixel-perfect, dark-first) |
 | [`hm-engineer`](hm-engineer/SKILL.md) | Validação de código senior-level pré-ship (baseline, OWASP, custo, resiliência) |
 | [`hm-error-feedback`](hm-error-feedback/SKILL.md) | Converte erros reais em feedback visual fiel, claro, acionável e seguro |
+| [`hm-incident`](hm-incident/SKILL.md) | Incident response, contenção, timeline, recuperação e postmortem |
 | [`hm-init`](hm-init/SKILL.md) | Início de projeto novo (stack, infra Docker-first, segurança day-1) |
 | [`hm-llm-guardrails`](hm-llm-guardrails/SKILL.md) | 14 patterns obrigatórios para apps que integram LLM em produção |
-| [`hm-error-feedback`](hm-error-feedback/SKILL.md) | Converte erros reais em feedback visual fiel, claro, acionável e seguro |
-| [`hm-incident`](hm-incident/SKILL.md) | Incident response, contenção, timeline, recuperação e postmortem |
 | [`hm-logger`](hm-logger/SKILL.md) | Logging estruturado, Grafana/Loki, correlação e observabilidade |
 | [`hm-performance`](hm-performance/SKILL.md) | Profiling com metas concretas e fix por gargalo (8 domínios) |
 | [`hm-product`](hm-product/SKILL.md) | Valida problemas, necessidades, hipóteses e valor real de produto |
 | [`hm-qa`](hm-qa/SKILL.md) | Quality assurance que declara baseline-ready (Dev Team) |
-| [`hm-state-machine`](hm-state-machine/SKILL.md) | Modela estados, eventos, transições e fluxos assíncronos |
 | [`hm-security`](hm-security/SKILL.md) | Auditoria de segurança profunda (L1/L2/L3, 14 domínios) |
 | [`hm-sequoia`](hm-sequoia/SKILL.md) | Valida se a direção estratégica está alinhada com o futuro |
-| [`hm-error-feedback`](hm-error-feedback/SKILL.md) | Converte erros reais em feedback visual fiel, claro, acionável e seguro |
+| [`hm-state-machine`](hm-state-machine/SKILL.md) | Modela estados, eventos, transições e fluxos assíncronos |
 | [`hm-ux-flow`](hm-ux-flow/SKILL.md) | Validação de fluxo cognitivo end-to-end (3 tipos de friction) |
-| [`hm-validate-all`](hm-validate-all/SKILL.md) | Orquestrador pré-ship que dispara as 12 skills de validação em ondas |
+| [`hm-validate-all`](hm-validate-all/SKILL.md) | Orquestrador pré-ship que dispara as skills de validação em ondas |
 | [`gsd`](gsd/SKILL.md) | Referência de aplicação do GSD (Goal-Driven Development) — loop de fases Discuss → Plan → Execute → Verify → Ship |
 
 ---
