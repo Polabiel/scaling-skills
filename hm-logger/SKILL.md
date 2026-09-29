@@ -1,341 +1,929 @@
 ---
 name: hm-logger
-description: Logging estruturado obrigatório — todo log carrega traceId, user (com estratégia de fallback em cascata) e contexto HTTP, nunca uma linha solta sem rastro. Use sempre que escrever, adicionar ou revisar uma chamada de log (logger.warn/error/info/debug) em rota de API, webhook, handler de agente/IA, job em background ou integração externa; ao fazer setup de logging num projeto ou serviço novo; ao investigar um incidente onde o log existente não permite saber quem fez o quê; ou ao auditar uma base de código atrás de logs órfãos (console.log, strings interpoladas sem payload). Cobre contrato de payload fechado, caçador de usuário multi-camada, contexto HTTP com latência, erro serializado, comparação before/after pra mutação concorrente entre usuário e IA, e captura de body com redação. Complementa — não substitui — `/hm-security` DOMÍNIO 8 e `/hm-performance`.
+description: Logging estruturado de produção com correlação distribuída, contexto de ator, eventos nomeados, severidade, erro serializado, redaction, limites de payload e rastreabilidade ponta a ponta. Use ao escrever, revisar ou auditar logs em APIs, webhooks, jobs, filas, agentes/IA, integrações externas, tarefas assíncronas e eventos de domínio; ao investigar incidentes; ou ao definir a infraestrutura de observabilidade de um serviço. Complementa hm-security (o que pode ser registrado), hm-performance (o que medir) e hm-error-feedback (o que o usuário vê).
 ---
 
-# /hm-logger — Logging Estruturado (v1)
+# /hm-logger — Logging Estruturado de Produção (v2)
 
-Você está agora em **modo logging estruturado**. Seu trabalho é garantir que nenhum log do sistema seja uma linha órfã — todo `logger.warn`, `.error`, `.info` ou `.debug` carrega quem agiu, onde, e com qual trace, mesmo quando quem agiu foi um agente de IA processando um webhook sem sessão de usuário nenhuma. Isso não é sobre O QUE deve ser logado por razão de segurança, nem sobre o que nunca pode aparecer num log — isso é `/hm-security` DOMÍNIO 8. hm-logger garante a FORMA: estrutura fechada, rastreável, nunca genérica.
+Você está agora em modo logging estruturado.
+
+Seu trabalho é fazer com que os logs sejam **pesquisáveis, correlacionáveis, seguros, semanticamente úteis e suficientes para reconstruir um evento sem abrir o código-fonte**.
+
+A régua não é "tem um log".
+
+A régua é:
+
+**quem/ator → o quê → onde → quando → resultado → impacto → correlação → evidência**
 
 ## Princípio central
 
-Um log sem `user`, sem `http` e sem `traceId` é um log órfão — existe no terminal no momento em que aconteceu, mas não serve pra nada quando alguém precisa reconstruir um incidente dias depois. Isso fica crítico em sistemas onde um agente de IA age sobre os mesmos dados que o usuário: se o log não distingue quem disparou a ação, toda investigação vira arqueologia. `logger.warn('[WebhookBlocked] ...')` sem payload estruturado é tão inútil quanto não logar nada — pior, ainda dá a falsa sensação de que o evento está rastreado.
+**Log deve registrar eventos relevantes como dados estruturados, não frases decorativas para o terminal.**
 
-A régua: qualquer log, aberto no Datadog/BetterStack meses depois, precisa responder sozinho — quem, onde, em resposta a quê, e o que mudou — sem exigir que alguém abra o código-fonte pra entender o contexto.
+Um bom log permite:
+- agrupar ocorrências do mesmo evento;
+- correlacionar uma requisição entre serviços;
+- localizar a operação exata que falhou;
+- distinguir usuário, serviço, IA e sistema como atores;
+- identificar sucesso, falha ou estado incerto;
+- reconstruir uma mutação importante;
+- investigar sem expor secrets ou PII desnecessária.
 
-## Quando usar
+OpenTelemetry define um modelo de log com timestamp, trace ID, span ID, severidade, body, resource e attributes; também define nomes semânticos para exceções e eventos. Use essa ideia como referência mesmo quando o projeto não utiliza OpenTelemetry.
 
-- Ao escrever, adicionar ou revisar qualquer chamada de log (`logger.warn/error/info/debug`) em rota de API, webhook, handler de agente/IA, job em background ou integração externa
-- Ao fazer setup de logging num projeto ou serviço novo (complementa `/hm-init`)
-- Ao investigar um incidente onde o log existente não permite saber quem fez o quê, quando, ou em qual request
-- Ao auditar uma base de código atrás de logs órfãos — `console.log`, strings interpoladas, `logger.warn` sem payload (modo auditoria, ver seção Output)
-- Sempre que usuário humano e agente de IA podem agir sobre o mesmo dado ao mesmo tempo e é preciso provar depois quem fez o quê primeiro
+## Escopo e responsabilidades
 
-**Quando NÃO usar (isso é outra skill):**
+### hm-logger decide a FORMA
 
-- Decidir O QUE deve ser logado por política de segurança/compliance (login failures, permission denials, audit trail) ou o que NUNCA pode aparecer num log (senha, token, PII) — isso é `/hm-security` DOMÍNIO 8. As duas se complementam: hm-security decide o conteúdo permitido, hm-logger garante que esse conteúdo chega com `traceId`/`user`/`http` do lado.
-- Medir latência/performance a partir dos números do log — isso é `/hm-performance` domínio 3 (backend — API latency). O campo `http.latencyMs` que essa skill gera é exatamente o dado que `/hm-performance` consome.
-- Checklist geral de qualidade de código — "zero prints em produção" é item do `/hm-engineer`. hm-logger é a implementação de referência desse item, não a auditoria em si.
+Esta skill define:
+- estrutura do log;
+- correlação;
+- actor context;
+- nome do evento;
+- severidade;
+- contexto HTTP/job;
+- serialização de erro;
+- redaction;
+- limites de tamanho;
+- cardinalidade;
+- deduplicação/amostragem quando apropriado;
+- regras para auditoria e diagnóstico.
 
-## O contrato (StructuredLogPayload)
+### hm-security decide o CONTEÚDO PERMITIDO
 
-Todo log estruturado do sistema segue esse formato. `user` é o único campo verdadeiramente obrigatório — é o que separa um log rastreável de um log solto.
+hm-security define o que nunca deve entrar em logs por segurança, privacidade ou compliance.
 
-```ts
-export interface StructuredLogPayload {
-  traceId: string;
-  user: LogUserContext;        // OBRIGATÓRIO — nunca opcional, nunca undefined
-  http?: LogHttpContext;
-  error?: LogErrorContext;
-  meta?: LogMetaContext;
-  reqBody?: unknown;           // só com captureBody habilitado (pattern 6)
-  resBody?: unknown;
-  [key: string]: unknown;
-}
+hm-logger garante que a informação permitida seja estruturada e rastreável.
 
-export interface LogUserContext {
-  id: string;                  // sempre preenchido — ver pattern 2
-  email?: string;
-  orgId?: string;
-}
+### hm-performance decide o QUE MEDIR
 
-export interface LogHttpContext {
-  method: string;
-  url: string;
-  route?: string;
-  statusCode: number;
-  latencyMs: number;
-  params?: Record<string, unknown>;
-  query?: Record<string, unknown>;
-}
+Latência, p95/p99, throughput, consumo e custo são responsabilidade de hm-performance.
 
-export interface LogErrorContext {
-  message: string;
-  type: string;
-  stack?: string;
-  code?: string;
-}
+hm-logger fornece os dados necessários para essas análises.
 
-export interface LogMetaContext {
-  before?: Record<string, unknown>;
-  after?: Record<string, unknown>;
-  [key: string]: unknown;
-}
-```
+### hm-error-feedback decide o QUE O USUÁRIO VÊ
 
-## Patterns obrigatórios
+O stack trace, código interno e contexto de infraestrutura pertencem ao canal técnico.
 
-### 1. Caçador de usuário (cascata de fallback)
+A mensagem visual pertence ao canal do produto.
 
-**Problema:** rota autenticada tem `req.session`. Webhook não tem. Handler de agente de IA processando uma fila também não tem. Se o logger exige `user` mas só sabe pegar de `req.session.user`, metade dos logs do sistema quebra ou vira `user: undefined` — voltando pra estaca zero.
+## Correção importante: identidade de correlação
 
-**Pattern:**
-```ts
-export function huntUserContext(req: any, explicitUser?: Partial<LogUserContext>): LogUserContext {
-  const session = req?.session;
-  let userId = session?.user?.id || session?.userId;
-  let userEmail = session?.user?.email;
-  let orgId = session?.organization?.id || session?.orgId;
+**Não trate x-request-id como traceId automaticamente.**
 
-  // Middleware que já decodificou token (req.user)
-  if (!userId && req?.user) {
-    userId = req.user.id || req.user.sub;
-    userEmail = req.user.email;
-    orgId = req.user.orgId;
-  }
+São conceitos diferentes.
 
-  // Webhooks e chamadas disparadas por agente: usuário vem no corpo ou na query
-  if (!userId) {
-    userId = req?.body?.userId || req?.body?.user?.id || req?.query?.userId || req?.body?.actorId;
-    orgId = orgId || req?.body?.orgId || req?.body?.organizationId || req?.query?.orgId;
-  }
+### traceId
 
-  // Override explícito sempre vence os fallbacks
-  if (explicitUser) {
-    userId = explicitUser.id || userId;
-    userEmail = explicitUser.email || userEmail;
-    orgId = explicitUser.orgId || orgId;
-  }
+Identifica a operação distribuída inteira e deve seguir o formato/propagação do W3C Trace Context quando tracing distribuído estiver em uso.
 
-  // Nunca undefined: se não achou ninguém, é a IA agindo sozinha — e isso também é um fato que precisa ficar registrado
-  return {
-    id: userId ?? "system-ai-context",
-    ...(userEmail ? { email: userEmail } : {}),
-    ...(orgId ? { orgId } : {}),
-  };
-}
-```
+### spanId
 
-A ordem da cascata importa: sessão → token decodificado → body/query → override explícito. `explicitUser` sempre vence porque é o chamador dizendo "eu já sei quem é, não precisa adivinhar."
+Identifica uma operação específica dentro do trace.
 
-**Adaptar por projeto:** os nomes dos campos (`session.user.id`, `req.user.sub`, `body.actorId`) mudam conforme o provider de auth (NextAuth, Clerk, JWT customizado). O que não muda é a ordem de fallback e o "nunca fica undefined".
+### requestId
 
-### 2. Contexto HTTP automático, com latência
+Identifica uma requisição local ou identificador legado do sistema.
 
-**Problema:** "esse endpoint tá lento" é uma reclamação que ninguém prova sem `latencyMs` gravado por request. Sem `method`/`url`/`statusCode`, cada log de erro exige abrir o código pra saber de qual rota ele veio.
+### correlationId
 
-**Pattern:**
-```ts
-let http: LogHttpContext | undefined;
-if (req && req.method) {
-  http = {
-    method: req.method,
-    url: req.url || "",
-    route: req.route || req.baseUrl,   // ver nota de framework abaixo
-    statusCode: res?.statusCode || 200,
-    latencyMs: startTime ? Date.now() - startTime : 0,
-    params: req.params && Object.keys(req.params).length ? req.params : undefined,
-    query: req.query && Object.keys(req.query).length ? req.query : undefined,
-  };
-}
-```
+Pode existir para correlacionar uma operação de negócio quando ela atravessa múltiplas requisições ou processos.
 
-`startTime = Date.now()` é capturado no início do handler e passado pro log no fim — sem isso, `latencyMs` fica sempre 0. **Nota de framework:** `req.route` é um objeto no Express (`req.route.path`); em outros frameworks pode nem existir. Ajustar a extração pro framework do projeto — o que não muda é `latencyMs` sempre presente, porque é o dado que alimenta `/hm-performance`.
+### jobId / messageId
 
-### 3. Erro serializado, nunca stack cru interpolado
+Identifica uma execução assíncrona ou mensagem/fila específica.
 
-**Problema:** `logger.error('Falhou: ' + err.message)` perde o `stack`, o `type` e qualquer `code` customizado. Quando o mesmo erro se repete em produção, não dá pra agrupar ocorrências porque cada mensagem interpolada sai levemente diferente.
+Um evento pode ter:
 
-**Pattern:**
-```ts
-let errorPayload: LogErrorContext | undefined;
-if (error) {
-  const serialized = serializeError(error, true); // helper da infra de logging do projeto
-  errorPayload = {
-    message: serialized.message,
-    type: serialized.type,
-    stack: serialized.stack,
-    code: (error as any).code || serialized.code,
-  };
-}
-```
+traceId + spanId + requestId + correlationId + jobId
 
-Passa o objeto `error` inteiro pro logger, nunca `error.message` isolado — quem decide o que preservar é a serialização, não o call site.
+sem que esses valores sejam equivalentes.
 
-### 4. Meta comparativo (before/after) pra mutação concorrente
+A especificação W3C define traceparent como mecanismo padrão de propagação distribuída e separa trace-id de parent-id; o trace ID identifica o trace completo.
 
-**Problema:** usuário muda uma config na tela enquanto a IA insere dado na mesma tabela. Sem snapshot, o pós-morte vira "acho que foi X" — ninguém prova o que realmente mudou nem quem mudou primeiro.
+## Contrato principal
 
-**Pattern:**
-```ts
-export function buildCompareMeta(oldData: Record<string, unknown> | null, newData: Record<string, unknown> | null) {
-  if (!oldData || !newData) return undefined;
-  return { before: oldData, after: newData };
-}
+Prefira um contrato compatível conceitualmente com OpenTelemetry:
 
-// uso:
-hmLogger.logEvent("info", "Upgrade de plano efetuado concorrentemente", {
-  req,
-  startTime,
-  meta: buildCompareMeta(dadosAntigos, dadosNovos),
-});
-```
+    export interface StructuredLogPayload {
+      timestamp?: string;
+      level: "trace" | "debug" | "info" | "warn" | "error" | "fatal";
+      eventName: string;
+      message?: string;
 
-Reservado pra mutação de estado real (upgrade de plano, mudança de permissão, config alterada) — não é lugar pra despejo de debug genérico. Se o antes/depois não importa pro incidente, não força o padrão.
+      traceId?: string;
+      spanId?: string;
+      requestId?: string;
+      correlationId?: string;
 
-### 5. Redação e captura de body — opt-in, nunca cru
+      actor?: LogActorContext;
+      service?: LogServiceContext;
+      http?: LogHttpContext;
+      job?: LogJobContext;
 
-**Problema:** logar `req.body` inteiro por padrão é vazamento de dado sensível esperando pra acontecer, e ainda estoura o custo de storage do provedor de log.
+      outcome?: "success" | "failure" | "partial" | "timeout" | "cancelled" | "unknown";
 
-**Pattern:**
-```ts
-const config = getRuntimeConfig();
-if (config.captureBody && req?.body) {
-  payload.reqBody = truncateIfNeeded(req.body, config.maxBodyBytes);
-}
-```
-
-Captura de body é **opt-in por config**, nunca padrão, e sempre truncada. Antes de truncar, o campo já deve ter passado por `redactSensitiveFields` — a lista do que precisa ser mascarado (senha, token, cartão, header de Authorization) é definida em `/hm-security` DOMÍNIO 8.2, não aqui. hm-logger garante que a captura é limitada e passa pela redação; o que entra na lista de redação é decisão de segurança.
-
-### 6. TraceId herdado, não regerado
-
-**Problema:** cada serviço numa arquitetura com múltiplas integrações externas gera seu próprio `traceId` do zero — uma requisição que atravessa vários serviços vira vários traces desconectados, e correlacionar o caminho completo de um evento exige adivinhação.
-
-**Pattern:**
-```ts
-const traceId = req?.headers?.["x-request-id"] || req?.requestId || randomUUID();
-```
-
-Sempre tenta herdar antes de gerar. Se o serviço upstream já mandou um `x-request-id`, esse é o trace que importa — gerar um novo quebra a cadeia de correlação.
-
-## O motor: `HigherMindLogger.logEvent`
-
-Os patterns acima se juntam num único ponto de entrada. Toda chamada de log do projeto passa por aqui — nunca direto no logger base.
-
-```ts
-export class HigherMindLogger {
-  private logger: Logger;
-  constructor(baseLogger: Logger) { this.logger = baseLogger; }
-
-  public logEvent(
-    level: "info" | "warn" | "error" | "debug",
-    message: string,
-    context: {
-      req: any; res?: any; startTime?: number;
-      explicitUser?: Partial<LogUserContext>;
-      meta?: Record<string, unknown> & { before?: any; after?: any };
-      error?: unknown;
+      durationMs?: number;
+      error?: LogErrorContext;
+      attributes?: Record<string, unknown>;
     }
-  ) {
-    const { req, res, startTime, explicitUser, meta, error } = context;
-    const traceId = req?.headers?.["x-request-id"] || req?.requestId || randomUUID();
-    const user = huntUserContext(req, explicitUser);
-    // ... monta http (pattern 2), errorPayload (pattern 3), captura body opt-in (pattern 5)
 
-    const payload: StructuredLogPayload = {
+    export interface LogActorContext {
+      type: "user" | "service" | "ai" | "system" | "anonymous";
+      id?: string;
+      orgId?: string;
+      source?: string;
+    }
+
+    export interface LogServiceContext {
+      name: string;
+      version?: string;
+      environment?: string;
+      instanceId?: string;
+    }
+
+    export interface LogHttpContext {
+      method: string;
+      route?: string;
+      statusCode?: number;
+      requestSizeBytes?: number;
+      responseSizeBytes?: number;
+    }
+
+    export interface LogJobContext {
+      queue?: string;
+      jobId?: string;
+      attempt?: number;
+      parentJobId?: string;
+    }
+
+    export interface LogErrorContext {
+      type: string;
+      message: string;
+      stack?: string;
+      code?: string;
+    }
+
+### Campos obrigatórios
+
+Não existe uma obrigação universal de todos os logs terem usuário.
+
+**Todo log deve ter contexto suficiente para explicar sua origem e seu evento.**
+
+Para eventos de request humano:
+- actor.type = user;
+- actor.id quando identificado;
+- traceId quando houver tracing;
+- eventName;
+- level.
+
+Para webhook sem usuário:
+- actor.type = service ou system conforme a realidade;
+- identificação da integração/origem;
+- eventName;
+- correlação disponível.
+
+Para IA:
+- actor.type = ai;
+- identifique o agente/modelo quando isso for útil;
+- preserve também o ator humano original se houver um.
+
+**Não use "system-ai-context" como substituto de identidade.** Isso mistura ator, fallback e contexto técnico em uma string impossível de consultar semanticamente.
+
+## Actor context: quem realmente fez a ação?
+
+Não confunda:
+- quem iniciou a requisição;
+- quem executou a ação;
+- qual sistema processou;
+- qual agente de IA tomou a decisão.
+
+Quando uma ação é iniciada pelo usuário e executada por uma IA, registre os dois quando possível:
+
+    {
+      "actor": {
+        "type": "ai",
+        "id": "agent_123",
+        "source": "workflow"
+      },
+      "initiatedBy": {
+        "type": "user",
+        "id": "usr_456"
+      }
+    }
+
+Se o projeto prefere um contrato diferente, preserve a mesma semântica.
+
+## Trace context e propagação
+
+### Entrada HTTP
+
+Ao receber uma requisição:
+1. leia e valide traceparent;
+2. preserve tracestate quando o stack de tracing suportar;
+3. associe o contexto ao request atual;
+4. gere novo trace somente quando não houver um contexto válido;
+5. gere um novo span para a operação local quando existir tracing.
+
+Não confie em qualquer header arbitrário como se fosse um W3C trace válido.
+
+### Saída HTTP
+
+Ao chamar outro serviço:
+- propague traceparent;
+- propague tracestate quando aplicável;
+- registre a operação externa como evento/log e/ou span;
+- mantenha correlationId se a lógica de negócio exigir.
+
+### Webhooks e integrações externas
+
+Se a integração fornece um ID próprio:
+- guarde-o como externalEventId, providerEventId ou equivalente;
+- não substitua traceId por esse identificador;
+- correlacione os dois.
+
+## Event name: pare de usar mensagem como identificador
+
+Não use a mensagem humana como chave principal de agrupamento.
+
+Ruim:
+
+    logger.warn("Falha ao enviar webhook para cliente X");
+
+Melhor:
+
+    logger.warn(
+      {
+        eventName: "webhook.delivery.failed",
+        provider: "meta",
+        outcome: "failure"
+      },
+      "Falha ao entregar webhook"
+    );
+
+eventName deve ser estável, curto, pesquisável e sem valores dinâmicos.
+
+O OpenTelemetry recomenda nomes de eventos que identifiquem a classe/tipo do evento e atributos estruturados para detalhes da ocorrência.
+
+Exemplos de nomes úteis:
+
+    auth.login.failed
+    auth.session.expired
+    payment.charge.failed
+    payment.charge.succeeded
+    webhook.delivery.started
+    webhook.delivery.succeeded
+    webhook.delivery.failed
+    agent.tool.call.started
+    agent.tool.call.failed
+    agent.tool.call.succeeded
+    database.mutation.conflict
+    job.processing.started
+    job.processing.failed
+    job.processing.succeeded
+    file.upload.failed
+    integration.timeout
+
+## Severidade: use impacto, não emoção
+
+Defina uma política clara:
+
+### trace
+Detalhe extremamente granular, normalmente desligado em produção.
+
+### debug
+Informação detalhada útil durante desenvolvimento/investigação.
+
+### info
+Evento normal de negócio/operação que pode ser útil para reconstruir o fluxo.
+
+### warn
+Algo anormal aconteceu, mas o sistema continuou ou houve degradação recuperável.
+
+### error
+Uma operação esperada falhou e precisa de investigação/correção.
+
+### fatal
+O processo ou serviço não consegue continuar corretamente.
+
+Não use error apenas porque uma condição foi inesperada pelo desenvolvedor.
+
+Não use fatal para qualquer exceção.
+
+## Resultado da operação
+
+Não deixe o leitor deduzir o resultado pela mensagem.
+
+Use:
+
+    outcome: "success"
+
+ou:
+
+    outcome: "failure"
+
+Para casos especiais:
+
+    partial
+    timeout
+    cancelled
+    unknown
+
+unknown é importante quando o sistema não conseguiu confirmar se a operação foi concluída.
+
+Isso é especialmente crítico para:
+- pagamentos;
+- criação de recursos;
+- comandos assíncronos;
+- chamadas externas sem idempotência;
+- timeouts;
+- conexões interrompidas.
+
+## Erros: preservar diagnóstico sem vazar segredo
+
+Um erro deve ser estruturado.
+
+Referência conceitual:
+
+    {
+      "error": {
+        "type": "PrismaClientKnownRequestError",
+        "message": "Unique constraint failed",
+        "code": "P2002",
+        "stack": "..."
+      }
+    }
+
+OpenTelemetry define convenções próprias para atributos de exceções, incluindo exception.message e exception.type.
+
+### Regras
+
+- nunca criar logger.error("Falha: " + err.message) como única evidência;
+- preserve o objeto/estrutura de erro quando o logger suportar;
+- serialize de forma consistente;
+- normalize tipos/códigos;
+- preserve stack no canal técnico apropriado;
+- aplique redaction antes de enviar o payload ao backend de logs.
+
+error.message sozinho não é diagnóstico suficiente.
+
+## Redaction: segurança por padrão
+
+**Nunca logue req.body inteiro como padrão.**
+
+A lista de campos sensíveis deve ser centralizada.
+
+Exemplos típicos que devem ser removidos, mascarados ou transformados conforme a política do produto:
+
+    password
+    passwordConfirmation
+    access_token
+    refresh_token
+    authorization
+    cookie
+    set-cookie
+    apiKey
+    secret
+    privateKey
+    creditCardNumber
+    cvv
+    sessionToken
+    databaseUrl
+
+Dependendo do domínio, também podem existir dados pessoais que precisem de minimização, hash ou remoção.
+
+OWASP recomenda não registrar diretamente passwords, access tokens, chaves, connection strings e dados pessoais/sensíveis; quando necessário, devem ser mascarados, sanitizados, hasheados ou protegidos.
+
+### Redaction deve acontecer antes do transporte
+
+Não dependa do dashboard de logs para esconder o dado.
+
+O payload já deve chegar sanitizado ao sink.
+
+## Data minimization
+
+Pergunte sempre:
+
+**Preciso registrar esse valor inteiro para investigar o evento?**
+
+Se não:
+- não registre;
+- registre somente propriedades derivadas;
+- faça hash quando a correlação exigir;
+- trunque strings longas;
+- registre comprimento, tipo ou categoria em vez do conteúdo.
+
+Exemplo:
+
+Ruim:
+
+    {
+      "attributes": {
+        "prompt": "conteúdo inteiro de 80.000 tokens..."
+      }
+    }
+
+Melhor:
+
+    {
+      "attributes": {
+        "promptLength": 80000,
+        "promptSource": "agent-context"
+      }
+    }
+
+## Limites de tamanho
+
+Todo logger de produção deve ter limites.
+
+Defina limites para:
+- mensagem;
+- strings individuais;
+- arrays;
+- objetos aninhados;
+- body;
+- stack trace;
+- quantidade de atributos;
+- tamanho total do evento.
+
+Quando truncar:
+- preserve a estrutura;
+- indique que houve truncamento;
+- não faça truncamento silencioso quando isso puder confundir investigação.
+
+Exemplo:
+
+    {
+      "attributes": {
+        "payload": "[TRUNCATED]",
+        "payloadBytes": 183920
+      }
+    }
+
+## Cardinalidade
+
+Nem todo campo deve ser indexado ou usado para agregação.
+
+Evite usar como dimensão permanente:
+- texto livre;
+- stack trace;
+- URL completa com query string;
+- prompt;
+- corpo HTTP;
+- IDs altamente variados em dashboards de agregação, quando não forem necessários.
+
+Prefira atributos estáveis:
+- eventName;
+- service.name;
+- environment;
+- statusCode;
+- outcome;
+- provider;
+- operation;
+- error.type;
+- error.code.
+
+IDs podem existir para busca pontual, mas não devem virar dimensões de métricas sem necessidade.
+
+## HTTP context
+
+Registre contexto HTTP útil sem reproduzir a requisição inteira.
+
+Preferido:
+
+    {
+      "http": {
+        "method": "POST",
+        "route": "/api/webhooks/[id]",
+        "statusCode": 500
+      }
+    }
+
+Evite:
+- URL completa com query string sensível;
+- headers inteiros;
+- cookies;
+- body bruto.
+
+Se o framework fornecer uma rota normalizada, prefira a rota à URL concreta para evitar cardinalidade desnecessária.
+
+durationMs deve medir a operação real.
+
+## Request lifecycle
+
+Para endpoints importantes, pense em estados:
+
+    request.received
+    →
+    operation.started
+    →
+    operation.succeeded
+
+ou:
+
+    request.received
+    →
+    operation.started
+    →
+    operation.failed
+
+Não gere três logs para cada endpoint por padrão apenas para "ter rastreabilidade".
+
+**O objetivo é sinalizar eventos úteis, não aumentar volume.**
+
+Um único log final de erro com contexto suficiente pode ser melhor que cinco logs redundantes.
+
+## Jobs, filas e assíncrono
+
+Requests HTTP não são o único contexto importante.
+
+Para jobs, registre quando necessário:
+
+    {
+      "job": {
+        "queue": "webhooks",
+        "jobId": "job_123",
+        "attempt": 2,
+        "parentJobId": "job_099"
+      }
+    }
+
+Quando uma requisição coloca uma mensagem em fila:
+- mantenha correlação com a origem;
+- associe jobId/messageId;
+- não gere um contexto completamente desconectado.
+
+Quando o processamento continua depois que a requisição termina, o log deve permitir responder:
+
+**"Qual request/ação originou este job?"**
+
+## Eventos assíncronos e IA
+
+Para agente/LLM, registre eventos significativos, não cada token.
+
+Bons candidatos:
+- geração iniciada;
+- tool call iniciada;
+- tool call concluída;
+- tool call falhou;
+- retry;
+- limite de tokens atingido;
+- timeout;
+- mudança importante de estado;
+- custo/tokens agregados, quando relevante;
+- resultado final.
+
+Evite:
+- prompt completo;
+- resposta completa se contiver PII ou conteúdo sensível;
+- cada chunk do streaming;
+- logs por token;
+- dumps gigantes do contexto.
+
+## Before/after: use somente em mutações reais
+
+Snapshots são úteis para:
+- mudança de plano;
+- permissão;
+- configuração;
+- mudança de status;
+- operação concorrente.
+
+Não use:
+
+    "before": { "objeto inteiro" },
+    "after": { "objeto inteiro" }
+
+como substituto para debugging.
+
+Prefira um diff mínimo:
+
+    {
+      "changes": {
+        "plan": {
+          "before": "pro",
+          "after": "enterprise"
+        },
+        "status": {
+          "before": "active",
+          "after": "pending"
+        }
+      }
+    }
+
+Sempre aplique redaction.
+
+## Audit log ≠ diagnostic log
+
+Não trate todos os logs como equivalentes.
+
+### Diagnostic log
+
+Serve para:
+- debugging;
+- incident response;
+- performance;
+- falhas de integração.
+
+Pode conter stack/contexto técnico apropriado e normalmente tem retenção diferente.
+
+### Audit log
+
+Serve para:
+- provar ações relevantes;
+- mudanças de permissão;
+- ações administrativas;
+- eventos regulatórios;
+- operações destrutivas.
+
+Deve ter semântica de auditoria própria e política de retenção/integridade adequada.
+
+hm-logger pode estruturar ambos, mas não deve presumir que a mesma retenção, acesso ou conteúdo serve para os dois.
+
+## Deduplicação, flood e sampling
+
+Logs de erro em loop podem derrubar o próprio sistema de observabilidade.
+
+Para eventos altamente repetitivos:
+- agregue quando possível;
+- faça rate limit de eventos idênticos;
+- use sampling para debug de alto volume;
+- preserve contadores/resumos;
+- nunca sample um evento de auditoria que tenha requisito de completude.
+
+Exemplo:
+
+Em vez de emitir 50.000 vezes:
+
+    integration.timeout
+
+durante um minuto, pode fazer sentido ter:
+- logs representativos;
+- contador de ocorrências;
+- primeiro/último timestamp;
+- serviço/provedor afetado.
+
+A estratégia precisa preservar a capacidade de responder "isso está acontecendo em escala?" sem gerar um log storm.
+
+## Logger habilitado: não construa payload caro à toa
+
+Quando o nível de log estiver desabilitado, evite construir:
+- serializações gigantes;
+- JSON.stringify de objetos enormes;
+- diffs caros;
+- queries apenas para montar log;
+- dumps completos.
+
+OpenTelemetry documenta uma API Enabled justamente para evitar trabalho computacional caro quando um log daquela severidade não será registrado.
+
+## Context propagation no código
+
+Prefira contexto implícito/escopado quando a infraestrutura suportar, para evitar passar traceId manualmente por dezenas de funções.
+
+Exemplo conceitual:
+
+    withLogContext(
+      {
+        actor,
+        traceId,
+        correlationId,
+      },
+      async () => {
+        // todas as funções internas podem emitir logs correlacionados
+      }
+    );
+
+Em Node.js, mecanismos de contexto assíncrono podem ser usados para isso, desde que o projeto valide propagação em:
+- Promise chains;
+- callbacks;
+- workers;
+- filas;
+- jobs;
+- streams.
+
+Não crie estado global mutável compartilhado entre requests.
+
+## Exemplo completo
+
+    hmLogger.error({
+      eventName: "payment.charge.failed",
+      message: "Falha ao processar cobrança",
       traceId,
-      user,
-      ...(http ? { http } : {}),
-      ...(errorPayload ? { error: errorPayload } : {}),
-      ...(meta ? { meta } : {}),
-    };
+      spanId,
+      requestId,
+      correlationId,
+      actor: {
+        type: "user",
+        id: user.id,
+        orgId: organization.id,
+      },
+      http: {
+        method: req.method,
+        route: "/api/payments/charge",
+        statusCode: 402,
+      },
+      outcome: "failure",
+      durationMs: Date.now() - startTime,
+      attributes: {
+        provider: "stripe",
+        operation: "charge",
+        retryable: false,
+      },
+      error: {
+        type: "CardDeclinedError",
+        message: "Pagamento recusado",
+        code: "card_declined",
+      },
+    );
 
-    this.logger[level](payload, `[HM-LOGGER] ${message}`);
-  }
-}
+A implementação concreta pode usar Pino, Winston, OpenTelemetry ou outro logger, desde que preserve a semântica.
 
-// acopla à infra de logging (Pino, Winston, etc.) já existente no projeto — não cria uma segunda instância paralela
-export const hmLogger = new HigherMindLogger(basePinoLogger);
-```
+## Exemplo: antes vs. depois
 
-Se o projeto ainda não tem uma infra base de logging (`serializeError`, `truncateIfNeeded`, `redactSensitiveFields`, `getRuntimeConfig`), criar uma versão mínima antes de acoplar o `hmLogger` — não reimplementar essas funções toda vez que a skill roda. Pra fundação de projeto novo, ver `/hm-init`.
+### Ruim
 
-**Saída final** (o que chega no provedor de log):
-```json
-{
-  "timestamp": "2026-07-01T22:15:30.123Z",
-  "level": "warn",
-  "service": "nome-do-servico",
-  "traceId": "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d",
-  "user": { "id": "usr_9923847293847", "orgId": "org_exemplo" },
-  "http": { "method": "POST", "url": "/api/webhooks/trigger", "statusCode": 400, "latencyMs": 42 },
-  "meta": { "agentId": "agent_gpt4_optimizer", "reason": "SecurityDomainPolicyViolation" },
-  "msg": "[HM-LOGGER] Tentativa de envio de webhook para URL bloqueada"
-}
-```
+    logger.error(
+      "[WebhookBlocked] Agent: " + data.agentId + " URL: " + rawUrl + " Error: " + err
+    );
 
-## Exemplo: antes vs depois
+Problemas:
+- evento não estruturado;
+- dados dinâmicos misturados com mensagem;
+- possível exposição de URL;
+- impossível agrupar corretamente;
+- correlação ausente;
+- erro não normalizado.
 
-### ❌ Log solto, sem contexto
-```ts
-logger.warn(
-  `[WebhookBlocked] Tentativa de envio para URL bloqueada | Agent: ${data.agentId} | URL: ${rawUrl.substring(0, 50)}...`
-);
-```
-Só existe enquanto alguém está olhando o terminal em tempo real. Depois disso, é ruído.
+### Bom
 
-### ✅ Log estruturado, rastreável
-```ts
-const startTime = Date.now();
-try {
-  if (isBlockedUrl(rawUrl)) {
-    hmLogger.logEvent("warn", "Tentativa de envio de webhook para URL bloqueada", {
-      req,
-      startTime,
-      meta: { agentId: data.agentId, blockedUrl: rawUrl, reason: "SecurityDomainPolicyViolation" },
+    hmLogger.error({
+      eventName: "webhook.delivery.blocked",
+      message: "Tentativa de envio de webhook bloqueada",
+      traceId,
+      actor: {
+        type: "ai",
+        id: data.agentId,
+      },
+      outcome: "failure",
+      attributes: {
+        reason: "security-policy",
+        provider: "custom",
+      },
     });
-    return res.status(400).json({ error: "Blocked URL" });
-  }
-} catch (err) {
-  hmLogger.logEvent("error", "Falha crítica na execução do webhook da IA", { req, startTime, error: err });
-}
-```
-`req` sozinho já entrega usuário, rota e latência — o dev só adiciona o que é específico do evento em `meta`.
 
-## Anti-patterns (rejeitar imediato)
+Se a causa técnica for relevante:
 
-- `logger.warn()` com template literal interpolado (estilo `[Tag] valor: ${x}`) em vez de payload estruturado
-- `console.log(...)` em rota de API, webhook ou job — proibido em produção (ver `/hm-engineer`)
-- Log dentro de contexto de request/webhook sem `traceId`
-- `user.id` deixado `undefined` quando existe qualquer fonte disponível (sessão, JWT, body, query) — sempre cai no fallback `system-ai-context`, nunca fica vazio
-- `req.body` inteiro logado sem truncamento nem redação prévia
-- Secret, token, senha ou PII dentro de `meta`/`reqBody` — ver `/hm-security` DOMÍNIO 8.2
-- `meta.before`/`meta.after` usado como despejo de debug genérico em vez de snapshot de mutação real
-- Novo `traceId` gerado quando já existe `x-request-id` upstream
+    error: serializeError(err)
 
-## Output (modo auditoria)
+## Anti-patterns críticos
 
-Quando o pedido é auditar logging existente — não escrever um log novo — reportar nesse formato:
+Rejeite imediatamente:
 
-```
-HM-LOGGER AUDIT
-Projeto: [nome]
-Logger base detectado: [Pino / Winston / console / nenhum]
-Arquivos/rotas varridos: [count]
+- console.log/print em código de produção;
+- mensagem dinâmica usada como único identificador do evento;
+- x-request-id tratado como traceId sem validação/semântica;
+- geração de novo trace quando existe contexto W3C válido;
+- log do req.body cru;
+- log de headers/cookies inteiros;
+- access token, password, API key ou secret em log;
+- erro bruto renderizado no logger sem redaction/serialização;
+- stack trace na mensagem humana do log;
+- logging por token/chunk de streaming;
+- dumps gigantes de prompt/contexto de LLM;
+- before/after contendo objeto inteiro sem necessidade;
+- campos altamente variáveis usados como dimensões permanentes de métricas;
+- retry automático que gera milhares de logs iguais;
+- construção cara de payload quando o nível está desabilitado;
+- contexto armazenado em singleton/global mutável por request;
+- identificação do ator reduzida a uma string genérica como "system-ai-context" quando a estrutura pode distinguir user/service/ai/system;
+- log de sucesso para operação que ainda está em estado incerto.
 
-LOGS ÓRFÃOS ENCONTRADOS
-[arquivo:linha] — [trecho do log] — falta: [traceId / user / http / error serializado]
-  Fix: migrar pra hmLogger.logEvent(...)
-[repetir por ocorrência relevante]
+## Checklist de revisão
 
-COBERTURA DO CONTRATO
-traceId presente: PASS/FAIL (X% dos logs auditados)
-user via huntUserContext: PASS/FAIL
-contexto http com latencyMs: PASS/FAIL
-erro serializado (não string crua): PASS/FAIL
-redação de campo sensível: PASS/FAIL (ver /hm-security DOMÍNIO 8.2)
+### Correlação
+- [ ] traceId propagado/gerado corretamente
+- [ ] spanId preservado quando houver tracing
+- [ ] requestId separado de traceId
+- [ ] correlationId usado quando houver operação de negócio distribuída
+- [ ] jobId/messageId presente em fluxos assíncronos
 
-VEREDICTO
-Logging rastreável / Logging órfão — bloqueante pra debug em produção
-```
+### Identidade
+- [ ] actor type explícito
+- [ ] ator humano preservado quando uma IA executa em seu nome
+- [ ] serviço/origem identificados quando não existe usuário
+- [ ] nenhum fallback genérico substituindo semântica real
 
-## Regras
+### Estrutura
+- [ ] eventName estável
+- [ ] level coerente
+- [ ] outcome explícito
+- [ ] timestamp disponível
+- [ ] atributos estruturados
+- [ ] mensagem humana opcional e curta
 
-- `user` nunca fica `undefined`. Se a cascata de fallback não achar ninguém, cai em `"system-ai-context"` — isso também é informação (a IA agiu sem ator humano identificável).
-- `console.log`/`print` em path de produção é bloqueante — mesma régua do `/hm-engineer`.
-- `traceId` sempre tenta herdar do header upstream antes de gerar um novo.
-- Nenhum secret, token, senha ou PII em `meta`/`reqBody` — a lista do que redigir é do `/hm-security` DOMÍNIO 8.2; não reinventar aqui.
-- Captura de `reqBody`/`resBody` é opt-in por config, sempre truncada, nunca o corpo cru por padrão.
-- `meta.before`/`meta.after` só entra quando existe mutação de estado real disputável entre usuário e agente — não é campo de debug solto.
-- `http.latencyMs` sempre presente quando `startTime` existe — é o dado que alimenta `/hm-performance`.
-- Sempre rodar antes de shippar rota nova com webhook ou handler de agente/IA.
+### HTTP / async
+- [ ] rota normalizada
+- [ ] status
+- [ ] duração
+- [ ] job/message context quando necessário
+- [ ] sem query/header/body sensível cru
+
+### Erros
+- [ ] error type
+- [ ] error message
+- [ ] code quando existir
+- [ ] stack no canal técnico
+- [ ] serialização consistente
+- [ ] redaction aplicada
+
+### Volume
+- [ ] limites de payload
+- [ ] truncation explícita
+- [ ] cardinalidade revisada
+- [ ] dedup/sampling quando necessário
+- [ ] nenhum payload caro construído sem necessidade
+
+### Segurança
+- [ ] secrets removidos
+- [ ] PII minimizada
+- [ ] cookies/tokens removidos
+- [ ] logs de auditoria separados conceitualmente dos diagnósticos
+
+## Output — auditoria
+
+Quando o pedido é auditar logging existente, reporte:
+
+    HM-LOGGER AUDIT
+    Projeto: [nome]
+    Logger base: [Pino / Winston / OpenTelemetry / console / outro]
+    Arquivos/rotas/jobs auditados: [count]
+
+    CORRELAÇÃO
+    traceId: PASS/FAIL
+    spanId: PASS/FAIL/N-A
+    requestId separado: PASS/FAIL
+    correlationId: PASS/FAIL/N-A
+    job/message correlation: PASS/FAIL/N-A
+
+    ATOR
+    user/service/ai/system semanticamente distinguíveis: PASS/FAIL
+    ator original preservado em automações: PASS/FAIL/N-A
+
+    ESTRUTURA
+    eventName estável: PASS/FAIL
+    outcome explícito: PASS/FAIL
+    severidade coerente: PASS/FAIL
+    HTTP/job context: PASS/FAIL
+    erro serializado: PASS/FAIL
+
+    SEGURANÇA
+    redaction: PASS/FAIL
+    secrets: CLEAN/EXPOSED
+    PII minimizada: PASS/FAIL
+    body/header logging: PASS/FAIL
+
+    VOLUME
+    limites de payload: PASS/FAIL
+    cardinalidade: PASS/FAIL
+    dedup/sampling: PASS/FAIL/N-A
+    payload lazy: PASS/FAIL
+
+    LOGS ÓRFÃOS
+    [arquivo:linha] — [evento] — problema: [...]
+    Fix: [...]
+
+    VEREDICTO
+    Rastreável / Parcialmente rastreável / Órfão
+    Bloqueadores: [count]
+
+## Regras finais
+
+- **Estruture eventos; não cole contexto em strings.**
+- **Não confunda requestId, correlationId e traceId.**
+- **Propague contexto W3C quando tracing distribuído estiver presente.**
+- **Nem todo log precisa de usuário; todo log precisa de ator/origem semanticamente correta quando esse contexto existe.**
+- **Não invente identidade para preencher campo obrigatório.**
+- **Nunca logue secrets por conveniência.**
+- **Capture body somente com opt-in, redaction e limite de tamanho.**
+- **Prefira evento estável + atributos estruturados a mensagens dinâmicas.**
+- **Registre resultado da operação explicitamente.**
+- **Trate timeout como estado potencialmente incerto.**
+- **Preserve correlação entre HTTP → fila → job → serviço externo.**
+- **Use before/after apenas para mudanças importantes e com diff mínimo.**
+- **Não transforme logs em métricas de alta cardinalidade.**
+- **Controle flood, deduplicate e sample diagnósticos de alto volume quando apropriado.**
+- **Não construa payload caro quando o nível estiver desabilitado.**
+- **Separe canal de diagnóstico do canal de auditoria.**
+
+## Fontes
+
+- OpenTelemetry — Logs Data Model: https://opentelemetry.io/docs/specs/otel/logs/data-model/
+- OpenTelemetry — Logs API / Enabled: https://opentelemetry.io/docs/specs/otel/logs/api/
+- OpenTelemetry — Semantic Conventions for Events: https://opentelemetry.io/docs/specs/semconv/general/events/
+- OpenTelemetry — Exceptions in Logs: https://opentelemetry.io/docs/specs/semconv/exceptions/exceptions-logs/
+- OpenTelemetry — Trace Context in non-OTLP Log Formats: https://opentelemetry.io/docs/specs/otel/compatibility/logging_trace_context/
+- W3C — Trace Context: https://www.w3.org/TR/trace-context/
+- OWASP — Logging Cheat Sheet: https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html
+
+## Regra final
+
+**O log não existe para dizer que algo aconteceu. Ele existe para permitir provar o que aconteceu.**
