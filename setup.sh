@@ -66,7 +66,7 @@ is_vscode_detected() {
   has_cmd code.cmd ||
   [ -d "$HOME/.config/Code" ] ||
   [ -d "$HOME/Library/Application Support/Code" ] ||
-  { [ -n "$APPDATA" ] 2>/dev/null && [ -d "$APPDATA/Code" ]; }
+  { [ -n "${APPDATA:-}" ] && [ -d "$APPDATA/Code" ]; }
 }
 
 is_kiro_detected() {
@@ -137,6 +137,26 @@ install_skill() {
   fi
 }
 
+verify_install() {
+  local target_dir="$1" mode="$2"
+  local file src_dir name dst
+
+  while IFS= read -r file; do
+    src_dir="$(dirname "$file")"
+    name="$(basename "$src_dir")"
+    dst="$target_dir/$name"
+
+    if [ "$mode" = "copy" ]; then
+      [ -f "$dst/SKILL.md" ] || return 1
+    else
+      [ -L "$dst" ] || return 1
+      [ "$(readlink "$dst")" = "$src_dir" ] || return 1
+    fi
+  done < <(skill_files)
+
+  return 0
+}
+
 install_to() {
   local label="$1" target_dir="$2" mode="$3"
   local file
@@ -147,7 +167,12 @@ install_to() {
     install_skill "$file" "$target_dir" "$mode"
   done < <(skill_files)
 
-  printf "%s skills instaladas.\n" "$(skill_count)"
+  if ! verify_install "$target_dir" "$mode"; then
+    printf "ERRO: instalação incompleta em %s\n" "$target_dir"
+    return 1
+  fi
+
+  printf "%s skills instaladas e verificadas.\n" "$(skill_count)"
 }
 
 uninstall_from() {
