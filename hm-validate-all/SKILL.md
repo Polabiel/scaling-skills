@@ -1,6 +1,6 @@
 ---
 name: hm-validate-all
-description: Orquestrador pré-ship que dispara as 21 skills de validação (align, sequoia, security, data-integrity, engineer, llm-guardrails, logger, qa, performance, ux-flow, designer, deploy) em ondas com gates duros, convoca council pra empate/override, consolida findings priorizados em UM único report e declara baseline-ready (Dev Team) ou BLOQUEADO. Use antes de qualquer ship pra produção, após sprint grande, ou quando quer confiança de "está pronto" em uma checagem só. Product-ready continua sendo prerrogativa do Owner.
+description: Orquestrador de validação que dispara até 21 skills aplicáveis (estratégia, produto, segurança, dados, engenharia, contratos, estados, observabilidade, QA, analytics, UX, acessibilidade, copy, conversão e deploy), em ondas com gates e consolida um único report. em ondas com gates duros, convoca council pra empate/override, consolida findings priorizados em UM único report e declara baseline-ready (Dev Team) ou BLOQUEADO. Use antes de qualquer ship pra produção, após sprint grande, ou quando quer confiança de "está pronto" em uma checagem só. Product-ready continua sendo prerrogativa do Owner.
 ---
 
 # /hm-validate-all — Validação Completa Pré-Ship (v2)
@@ -78,7 +78,24 @@ Antes de despachar, varra o repo e decida o que roda. Sinais concretos — não 
 - **Interface** (`/hm-designer`): `.tsx`/`.vue`/`.svelte` com componente visual, CSS/Tailwind. Headless ou lib pura → N/A
 - **Fluxo** (`/hm-ux-flow`): qualquer jornada de 2+ passos, incluindo CLI interativo
 - **Deploy** (`/hm-deploy`): `Dockerfile`, workflow de CI, `vercel.json`, config de `electron-builder`/Tauri, publicação npm
+- **API** (`/hm-api-contract`): OpenAPI/JSON Schema, routers, controllers, webhooks, SDK clients, DTOs ou mudanças de resposta
+- **State** (`/hm-state-machine`): unions de estado, reducers, statecharts, polling/SSE/WebSocket, workers, queues, retry/cancel/timeout
+- **Analytics** (`/hm-analytics`): chamadas de analytics, eventos, funnels, flags/experimentos e métricas associadas
+- **Accessibility** (`/hm-accessibility`): componentes interativos, formulários, dialogs, menus, tabs, comboboxes e atributos ARIA
+- **Copy** (`/hm-copy`): labels, CTA, mensagens, onboarding, empty/loading/error states
+- **Error feedback** (`/hm-error-feedback`): mapping de erro para UI, toasts, banners, dialogs, field errors e recovery
+- **Conversion** (`/hm-conversion`): pricing, signup, checkout, upgrade, acquisition ou lead capture
+- **Incident** (`/hm-incident`): branch/PR explicitamente ligada a incidente, hotfix ou postmortem follow-up
 - **Estratégia** (`/hm-align`, `/hm-sequoia`): align sempre. Sequoia pula em ship de manutenção pura (bugfix, bump de dep, refactor sem mudança de direção) — anota "N/A: sem aposta estratégica nesse ship"
+- **Produto** (`/hm-product`): feature nova ou requisito/escopo com incerteza; bugfix puro pode marcar N/A
+- **API contract** (`/hm-api-contract`): mudanças em endpoints, payloads, schemas, webhooks ou integrações
+- **State machine** (`/hm-state-machine`): fluxos com múltiplos estados, async, retry, timeout, conflito ou background
+- **Analytics** (`/hm-analytics`): comportamento mensurável, funnel, onboarding, retenção, conversão ou experimento
+- **Accessibility** (`/hm-accessibility`): qualquer interface gráfica alterada
+- **Copy** (`/hm-copy`): copy relevante alterada
+- **Error feedback** (`/hm-error-feedback`): estados de erro/sucesso/timeout/retry ou mensagens ao usuário
+- **Conversion** (`/hm-conversion`): aquisição, ativação, pricing, signup, checkout, upgrade ou lead capture
+- **Incident** (`/hm-incident`): somente remediação de incidente ativo ou follow-up de postmortem
 
 Skill não aplicável **não some do report** — entra na seção N/A com o motivo. Silêncio vira dúvida depois.
 
@@ -171,6 +188,24 @@ Skill(hm-ux-flow, "Percorrer fluxos criticos: onboarding, checkout, [fluxo novo]
 Skill(hm-designer, "Validar interface das telas novas: D, E, F. Padrão Linear/Stripe/A24. Repo em /path/to/repo")
 
 Skill(hm-deploy, "Validar deploy pré-ship. Distribuicao = X. Repo em /path/to/repo")
+
+Skill(hm-product, "Validar problema, usuário, hipótese, escopo e critério de sucesso da feature Y. Repo em /path/to/repo")
+
+Skill(hm-api-contract, "Validar contrato das APIs/webhooks alterados: schemas, responses, erros, compatibilidade e idempotência. Repo em /path/to/repo")
+
+Skill(hm-state-machine, "Mapear e testar estados, eventos e transições do fluxo Y, incluindo async, retry, timeout e conflitos. Repo em /path/to/repo")
+
+Skill(hm-analytics, "Auditar instrumentação da feature Y: eventos, propriedades, funnel, métricas primária/guardrails e qualidade dos dados. Repo em /path/to/repo")
+
+Skill(hm-accessibility, "Auditar telas/componentes Y: semântica, teclado, foco, formulários, status, reflow e ARIA. Repo em /path/to/repo")
+
+Skill(hm-copy, "Revisar copy das telas Y: CTA, labels, erro, loading, empty state e consistência terminológica. Repo em /path/to/repo")
+
+Skill(hm-error-feedback, "Validar os estados de erro e recuperação das telas Y: fidelidade, componente, ação, acessibilidade e ausência de vazamento técnico. Repo em /path/to/repo")
+
+Skill(hm-conversion, "Revisar o caminho de conversão Y: intenção, fricção, CTA, mobile e hipóteses de validação. Repo em /path/to/repo")
+
+Skill(hm-incident, "Investigar/remediar incidente X: impacto, timeline, Grafana/Loki/Tempo, mitigação, recuperação e follow-up. Repo em /path/to/repo")
 ```
 
 Cada skill retorna findings no vocabulário dela. Você coleta tudo e traduz.
@@ -233,7 +268,14 @@ Exceção que não admite ponderação: **dado em risco e CRÍTICO** mesmo que s
 | Integridade de dados | `/hm-data-integrity` | `/hm-qa` seção 6 e `/hm-deploy` são scan raso |
 | Container / secrets | `/hm-security` D1 e D7 | `/hm-engineer` e `/hm-deploy` corroboram |
 | Visual vs decisão | `/hm-designer` (visual), `/hm-ux-flow` (decisão) | Não se sobrepõem — se um finding e sobre pixel, e designer; sobre ordem de decisão, e ux-flow |
-| Estratégia | `/hm-align` (isso deveria existir?), `/hm-sequoia` (aponta pro futuro?) | Complementares. Align olha o agora, sequoia olha o horizonte |
+| Estratégia | `/hm-align` (isso deveria existir?), `/hm-sequoia` (aponta pro futuro?) | Complementares |
+| Produto | `/hm-product` | `/hm-align` valida direção; `hm-analytics` valida resultado observado |
+| API/erro | `/hm-api-contract` / `/hm-engineer` | `hm-logger` observa; `hm-error-feedback` apresenta |
+| Estados | `/hm-state-machine` | `hm-engineer` implementa; `hm-qa` testa |
+| Erro visual | `/hm-error-feedback` | `hm-engineer` causa; `hm-logger` diagnóstico; `hm-accessibility` acessibilidade |
+| Copy | `/hm-copy` | `hm-conversion` valida fricção; `hm-designer` composição |
+| Conversão | `/hm-conversion` | `hm-analytics` mede; `hm-product` valida problema |
+| Acessibilidade | `/hm-accessibility` | `hm-designer` composição; `hm-qa` valida comportamento |
 
 ## Consolidacao do output
 
