@@ -1,6 +1,6 @@
 ---
 name: hm-validate-all
-description: Orquestrador pré-ship que dispara as 12 skills de validação (align, sequoia, security, data-integrity, engineer, llm-guardrails, logger, qa, performance, ux-flow, designer, deploy) em ondas com gates duros, convoca council pra empate/override, consolida findings priorizados em UM único report e declara baseline-ready (Dev Team) ou BLOQUEADO. Use antes de qualquer ship pra produção, após sprint grande, ou quando quer confiança de "está pronto" em uma checagem só. Product-ready continua sendo prerrogativa do Owner.
+description: Orquestrador pré-ship que dispara as 21 skills de validação (align, sequoia, security, data-integrity, engineer, llm-guardrails, logger, qa, performance, ux-flow, designer, deploy) em ondas com gates duros, convoca council pra empate/override, consolida findings priorizados em UM único report e declara baseline-ready (Dev Team) ou BLOQUEADO. Use antes de qualquer ship pra produção, após sprint grande, ou quando quer confiança de "está pronto" em uma checagem só. Product-ready continua sendo prerrogativa do Owner.
 ---
 
 # /hm-validate-all — Validação Completa Pré-Ship (v2)
@@ -56,6 +56,15 @@ Cada skill e dona de uma pergunta. Não há sobreposição de veredicto — há 
 | 10 | `/hm-ux-flow` | O user decide com clareza, na ordem certa? | Existe fluxo multi-step (UI ou CLI) |
 | 11 | `/hm-designer` | A interface atende a barra visual? | Existe interface gráfica |
 | 12 | `/hm-deploy` | Sobe do zero, reprodutível, sem surpresa? | Sempre que existe artefato de distribuicao |
+| 13 | `/hm-product` | Estamos resolvendo um problema real para um usuário real? | Feature nova, requisito ambíguo ou mudança de produto |
+| 14 | `/hm-api-contract` | Backend e clientes compartilham um contrato explícito? | API, webhook, schema ou integração alterados |
+| 15 | `/hm-state-machine` | Todos os estados e transições são possíveis e testáveis? | Fluxo com async, loading, retry, timeout, conflito ou múltiplos estados |
+| 16 | `/hm-analytics` | Conseguimos medir comportamento e resultado real? | Feature user-facing, conversão, onboarding, retenção ou experimento |
+| 17 | `/hm-accessibility` | A interface pode ser percebida e operada por diferentes usuários? | Existe interface gráfica |
+| 18 | `/hm-copy` | O texto torna a ação e o estado claros? | Existe copy significativa em UI |
+| 19 | `/hm-error-feedback` | O erro real chega ao usuário de forma fiel e acionável? | Existe mudança em estado de erro/user feedback |
+| 20 | `/hm-conversion` | Existe fricção desnecessária no caminho de conversão? | Aquisição, ativação, pricing, signup, checkout, upgrade ou lead capture |
+| 21 | `/hm-incident` | O incidente está sendo contido, recuperado e aprendido corretamente? | Hotfix/remediação de incidente ou investigação pós-incidente |
 | — | `council` | Qual decisão tomar quando as skills empatam? | Conflito real, override de Owner, ou estratégia vs prontidão |
 
 ## Detecção de aplicabilidade
@@ -97,28 +106,36 @@ Gate: nenhum. Estratégia informa, não bloqueia. Mas se align retorna "Não con
 
 Gate: CRÍTICO em `/hm-security` DOMÍNIO 1 (Container & Infra) ou DOMÍNIO 7 (Secrets) → **PARA**. CRÍTICO em `/hm-data-integrity` → continua a varredura mas o veredicto final já e BLOQUEADO.
 
-**Onda 2 — Código**
+**Onda 2 — Código + Contratos + Estados**
 5. `/hm-engineer` — código fundamenta funcionalidade. Bug estrutural invalida QA passing
-6. `/hm-llm-guardrails` — em paralelo com engineer
-7. `/hm-logger` — em paralelo. Roda antes de performance: `http.latencyMs` do logger e o dado que performance consome
+6. `/hm-api-contract` — em paralelo quando houver API/webhook/schema
+7. `/hm-state-machine` — em paralelo quando houver múltiplos estados/async
+8. `/hm-llm-guardrails` — em paralelo com engineer quando houver LLM
+9. `/hm-logger` — em paralelo. Roda antes de performance: `http.latencyMs` do logger e o dado que performance consome
 
 Gate: pattern obrigatório de LLM faltando (1-9, 12, 13) = bloqueante de produção. Continua, mas marca.
 
-**Onda 3 — Execução**
-8. `/hm-qa` — funcionalidade validada apos segurança + código OK. Dono dos 5 checks de baseline
-9. `/hm-performance` — números concretos depois que a feature comprovadamente funciona
+**Onda 3 — Execução + Medição**
+10. `/hm-qa` — funcionalidade validada após segurança + código OK. Dono dos 5 checks de baseline
+11. `/hm-performance` — números concretos depois que a feature comprovadamente funciona
+12. `/hm-analytics` — instrumentação, funil e métricas quando aplicável
 
 Gate: qualquer um dos 5 checks de baseline falhando = BLOQUEADO. Sem compensação.
 
 **Onda 4 — Experiência**
-10. `/hm-ux-flow` — decisão antes de pixel. Polir visual de fluxo que vai ser reestruturado e retrabalho
-11. `/hm-designer` — design polish vale apos funcional + fluxo resolvido
+13. `/hm-ux-flow` — decisão antes de pixel. Polir visual de fluxo que vai ser reestruturado e retrabalho
+14. `/hm-error-feedback` — estados de erro e recuperação quando aplicável
+15. `/hm-accessibility` — teclado, foco, semântica e status quando existe UI
+16. `/hm-copy` — clareza e consistência da copy quando existe copy relevante
+17. `/hm-conversion` — fricção de conversão quando aplicável
+18. `/hm-designer` — design polish vale após funcional + fluxo resolvido
 
 **Onda 5 — Entrega**
-12. `/hm-deploy` — deploy gate só importa apos tudo acima OK
+19. `/hm-deploy` — deploy gate só importa após tudo acima OK
 
-**Onda 6 — Council (condicional)**
-13. `council` — só se um dos gatilhos da seção Council disparar
+**Onda 6 — Incident / Council (condicional)**
+20. `/hm-incident` — só em remediação de incidente ou pós-incidente
+21. `council` — só se um dos gatilhos da seção Council disparar
 
 **Exceção:** se o ship e urgente e o owner pediu "valida tudo", roda tudo mesmo com criticos no caminho — pra ter mapa completo do estado, não pra shippar. Owner decide.
 
@@ -179,7 +196,7 @@ Triads úteis aqui: `ship-now` (torvalds, feynman, aurelius — correção prát
 
 ## Tradução de severidade
 
-As 12 skills falam vocabulários diferentes. Traduza pra escala comum (CRÍTICO / ALTO / MEDIO / BAIXO) antes de consolidar:
+As 21 skills de validação falam vocabulários diferentes. Traduza pra escala comum (CRÍTICO / ALTO / MEDIO / BAIXO) antes de consolidar:
 
 | Skill | Vocabulário nativo | Tradução |
 |---|---|---|
