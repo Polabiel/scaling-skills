@@ -170,6 +170,33 @@ const response = await anthropic.messages.create({
 - CI build cache configurado
 - Type check incremental (tsc --build se monorepo)
 
+### Capacidade e saturação
+
+Não audite apenas latency nominal.
+
+Procure:
+- comportamento sob concorrência;
+- fila crescendo mais rápido que o processamento;
+- connection pool saturado;
+- thread/event loop saturado;
+- CPU perto do saturation point;
+- memory pressure;
+- cache stampede;
+- fan-out explosivo;
+- chamadas externas em cascata;
+- retries aumentando a carga durante degradação;
+- ausência de limite de concorrência.
+
+Pergunta obrigatória:
+
+    "O que acontece quando a dependência fica 10x mais lenta?"
+
+E também:
+
+    "O sistema reduz carga ou continua aceitando trabalho até morrer?"
+
+Retry, timeout e backpressure devem ser avaliados pelo efeito que produzem sobre throughput, latência e capacidade do sistema. Retry que multiplica a carga durante uma degradação é finding de performance/resiliência, não fix de performance.
+
 ## Profiling tools por stack
 
 | Stack | Tool |
