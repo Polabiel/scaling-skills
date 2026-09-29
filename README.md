@@ -2,7 +2,7 @@
 
 Minhas skills baseadas na Filosofia Higher Mind e nas minhas experiências com código como dev.
 
-Coleção de **25 skills** para agentes de IA (padrão [Agent Skills](https://agentskills.io) — uma pasta com `SKILL.md`):
+Coleção de **31 skills** para agentes de IA (padrão [Agent Skills](https://agentskills.io) — uma pasta com `SKILL.md`):
 
 | Skill | O que faz |
 |---|---|
@@ -27,6 +27,12 @@ Coleção de **25 skills** para agentes de IA (padrão [Agent Skills](https://ag
 | [`hm-qa`](hm-qa/SKILL.md) | Quality assurance que declara baseline-ready (Dev Team) |
 | [`hm-security`](hm-security/SKILL.md) | Auditoria de segurança profunda (L1/L2/L3, 14 domínios) |
 | [`hm-sequoia`](hm-sequoia/SKILL.md) | Valida se a direção estratégica está alinhada com o futuro |
+| [`hm-design-system`](hm-design-system/SKILL.md) | Governança de tokens, componentes, padrões, acessibilidade e evolução do design system |
+| [`pm-data`](pm-data/SKILL.md) | Gestão de produto orientada por dados, métricas, tracking e governança |
+| [`pm-growth`](pm-growth/SKILL.md) | Growth de produto: aquisição, ativação, retenção, monetização e experimentação |
+| [`pm-ops`](pm-ops/SKILL.md) | Product Operations: processos, feedback, handoffs, launch e operação |
+| [`pm-strategy`](pm-strategy/SKILL.md) | Estratégia de produto, outcomes, apostas, prioridades e roadmap |
+| [`pm-technical`](pm-technical/SKILL.md) | Gestão técnica de produto, viabilidade, dívida, arquitetura e NFRs |
 | [`hm-state-machine`](hm-state-machine/SKILL.md) | Modela estados, eventos, transições e fluxos assíncronos |
 | [`hm-ux-flow`](hm-ux-flow/SKILL.md) | Validação de fluxo cognitivo end-to-end (3 tipos de friction) |
 | [`hm-validate-all`](hm-validate-all/SKILL.md) | Orquestrador pré-ship que dispara as skills de validação em ondas |
