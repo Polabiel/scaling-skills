@@ -14,6 +14,8 @@ erro real → diagnóstico → classificação → apresentação visual → aç
 
 O usuário precisa receber um feedback que seja **fiel ao que realmente aconteceu**, compreensível e útil para decidir o próximo passo.
 
+> **Nota — origem do erro:** `hm-error-feedback` não deve inferir a causa técnica pela mensagem recebida. Para a semântica do erro, estado, retryability, idempotência e contrato de API, consulte `/hm-engineer`; para rastreabilidade, `traceId`, `eventName`, erro serializado e diagnóstico, consulte `/hm-logger`. Esta skill é responsável por traduzir a verdade conhecida em feedback visual para o usuário.
+
 ## Princípio central
 
 **A UI não deve mentir sobre o estado do sistema.**
