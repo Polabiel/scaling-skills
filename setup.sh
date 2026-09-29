@@ -137,6 +137,51 @@ install_skill() {
   fi
 }
 
+count_existing_skills() {
+  local target_dir="$1"
+  local file name dst count=0
+
+  while IFS= read -r file; do
+    name="$(basename "$(dirname "$file")")"
+    dst="$target_dir/$name"
+    if [ -L "$dst" ] || [ -e "$dst" ]; then
+      count=$((count + 1))
+    fi
+  done < <(skill_files)
+
+  printf "%s" "$count"
+}
+
+confirm_update_existing() {
+  local label="$1" target_dir="$2"
+  local existing answer
+
+  existing="$(count_existing_skills "$target_dir")"
+
+  if [ "$existing" -eq 0 ]; then
+    return 0
+  fi
+
+  printf "\n%s\n" "Já existem $existing skill(s) instaladas em $label."
+  printf "%s\n" "As skills existentes NÃO serão sobrescritas sem confirmação."
+  printf "%s" "Atualizar/substituir essas skills agora? [y/N] "
+
+  if ! read -r answer </dev/tty; then
+    answer=""
+  fi
+
+  case "$answer" in
+    y|Y)
+      printf "%s\n" "Atualização autorizada."
+      return 0
+      ;;
+    *)
+      printf "%s\n" "Atualização recusada. Skills existentes serão preservadas."
+      return 1
+      ;;
+  esac
+}
+
 verify_install() {
   local target_dir="$1" mode="$2"
   local file src_dir name dst
@@ -159,20 +204,54 @@ verify_install() {
 
 install_to() {
   local label="$1" target_dir="$2" mode="$3"
-  local file
+  local file src_dir name dst update_existing installed=0 skipped=0
 
   printf "\n[%s] %s\n" "$label" "$target_dir"
 
-  while IFS= read -r file; do
-    install_skill "$file" "$target_dir" "$mode"
-  done < <(skill_files)
-
-  if ! verify_install "$target_dir" "$mode"; then
-    printf "ERRO: instalação incompleta em %s\n" "$target_dir"
-    return 1
+  update_existing=0
+  if confirm_update_existing "$label" "$target_dir"; then
+    update_existing=1
   fi
 
-  printf "%s skills instaladas e verificadas.\n" "$(skill_count)"
+  while IFS= read -r file; do
+    src_dir="$(dirname "$file")"
+    name="$(basename "$src_dir")"
+    dst="$target_dir/$name"
+
+    if [ -L "$dst" ] || [ -e "$dst" ]; then
+      if [ "$update_existing" -eq 1 ]; then
+        install_skill "$file" "$target_dir" "$mode"
+        installed=$((installed + 1))
+        printf "  atualizado: %s\n" "$name"
+      else
+        skipped=$((skipped + 1))
+        printf "  preservado: %s\n" "$name"
+      fi
+    else
+      install_skill "$file" "$target_dir" "$mode"
+      installed=$((installed + 1))
+      printf "  instalado:  %s\n" "$name"
+    fi
+  done < <(skill_files)
+
+  if [ "$skipped" -gt 0 ]; then
+    printf "%s\n" "$skipped skill(s) existente(s) preservada(s)."
+  fi
+
+  if [ "$installed" -gt 0 ] && [ "$skipped" -eq 0 ]; then
+    printf "%s skills instaladas/atualizadas e verificadas.\n" "$installed"
+  elif [ "$installed" -gt 0 ]; then
+    printf "%s skills novas/atualizadas.\n" "$installed"
+  else
+    printf "%s\n" "Nenhuma skill existente foi alterada."
+  fi
+
+  if ! verify_install "$target_dir" "$mode" 2>/dev/null; then
+    if [ "$skipped" -eq 0 ]; then
+      printf "ERRO: instalação incompleta em %s\n" "$target_dir"
+      return 1
+    fi
+  fi
 }
 
 uninstall_from() {
