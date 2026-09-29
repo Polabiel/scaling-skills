@@ -152,6 +152,8 @@ Navegue pela aplicação como um usuario faria:
 - Imagens tem alt text
 - Formularios tem labels
 
+> **Nota — Validação de erros:** ao testar um fluxo com falha, valide também o contrato entre backend, `/hm-logger` e `/hm-error-feedback`: causa real, estado da operação, código estável, correlação, mensagem segura, recuperação e ausência de vazamento técnico. Não considere "apareceu uma mensagem" como cobertura suficiente.
+
 ## Formato do output
 
 ```
