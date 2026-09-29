@@ -15,6 +15,8 @@ A régua é:
 
 **quem/ator → o quê → onde → quando → resultado → impacto → correlação → evidência**
 
+> **Nota — criação de erros:** `hm-logger` não deve definir sozinho a semântica de domínio de um erro. Quando surgir um novo erro ou mudança de comportamento, consulte `/hm-engineer` para causa, classificação, retry/idempotência e contrato técnico, e `/hm-error-feedback` para decidir o que deve chegar ao usuário. Aqui ficam as regras de como esse erro será observado, correlacionado e investigado.
+
 ## Princípio central
 
 **Log deve registrar eventos relevantes como dados estruturados, não frases decorativas para o terminal.**
