@@ -13,5 +13,8 @@ jobs:
       - name: Validate setup syntax
         run: bash -n setup setup.sh
 
-      - name: Validate skills
+      - name: Validate Agent Skills compatibility
+        run: bash scripts/validate-agent-skills.sh
+
+      - name: Validate setup doctor
         run: ./setup --doctor
