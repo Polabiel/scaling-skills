@@ -167,6 +167,10 @@ Especialmente importante em:
 - envio de mensagens;
 - jobs.
 
+Para chamadas concorrentes com a mesma chave, a proteção não pode existir apenas no cliente: o servidor deve garantir que a repetição não produza dois efeitos.
+
+Quando a operação original terminou mas a resposta foi perdida, a repetição deve preservar a mesma semântica da operação original sempre que o contrato permitir.
+
 ## 9. Paginação e ordenação
 
 Nunca deixe o consumidor adivinhar como grandes coleções funcionam.
