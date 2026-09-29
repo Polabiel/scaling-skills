@@ -1,6 +1,6 @@
 ---
 name: pm-technical
-description: Gestão de produto técnico: viabilidade, arquitetura, dívida técnica, decisões de engenharia, requisitos não funcionais, dependências e trade-offs técnicos. Use quando uma decisão de produto depende de arquitetura, performance, segurança, escalabilidade, migração, APIs, infraestrutura, IA ou dívida técnica. Complementa hm-engineer, hm-api-contract, hm-performance, hm-security e hm-logger.
+description: "Gestão de produto técnico: viabilidade, arquitetura, dívida técnica, decisões de engenharia, requisitos não funcionais, dependências e trade-offs técnicos. Use quando uma decisão de produto depende de arquitetura, performance, segurança, escalabilidade, migração, APIs, infraestrutura, IA ou dívida técnica. Complementa hm-engineer, hm-api-contract, hm-performance, hm-security e hm-logger."
 ---
 
 # /pm-technical — Product Management Técnico (v1)
