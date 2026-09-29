@@ -19,7 +19,7 @@ Cobertura parcial e a armadilha: código limpo com dado em risco não shippa. In
 - **Product-ready** = Owner validou UX, fit com tese, qualidade visual end-to-end. **Só Owner declara.**
 - **Estratégia** (`/hm-align`, `/hm-sequoia`) nunca bloqueia baseline-ready. Vai pra seção DECISÃO DE OWNER. Você reporta o desalinhamento, Owner crava.
 
-Os 5 checks obrigatorios do baseline-ready (do `~/.claude/CLAUDE.md` global) já sao cobertos pelo `/hm-qa` v4. Esta skill consolida + adiciona as outras 11 camadas:
+Os 5 checks obrigatorios do baseline-ready (do `~/.claude/CLAUDE.md` global) já sao cobertos pelo `/hm-qa` v4. Esta skill consolida + adiciona as demais camadas aplicáveis:
 
 1. **typecheck verde** — coberto por `/hm-qa` + `/hm-engineer`
 2. **lint verde** — coberto por `/hm-qa` + `/hm-engineer`
@@ -87,6 +87,15 @@ Antes de despachar, varra o repo e decida o que roda. Sinais concretos — não 
 - **Conversion** (`/hm-conversion`): pricing, signup, checkout, upgrade, acquisition ou lead capture
 - **Incident** (`/hm-incident`): branch/PR explicitamente ligada a incidente, hotfix ou postmortem follow-up
 - **Estratégia** (`/hm-align`, `/hm-sequoia`): align sempre. Sequoia pula em ship de manutenção pura (bugfix, bump de dep, refactor sem mudança de direção) — anota "N/A: sem aposta estratégica nesse ship"
+- **Produto** (`/hm-product`): feature nova, escopo ambíguo ou mudança relevante de comportamento
+- **API contract** (`/hm-api-contract`): endpoints, schemas, DTOs, webhooks, SDKs ou respostas alteradas
+- **State machine** (`/hm-state-machine`): múltiplos estados, async, polling, retry, timeout, cancelamento ou conflitos
+- **Analytics** (`/hm-analytics`): eventos, funnels, retenção, conversão, experimentos ou métricas novas
+- **Accessibility** (`/hm-accessibility`): interface gráfica alterada
+- **Copy** (`/hm-copy`): textos de interface relevantes alterados
+- **Error feedback** (`/hm-error-feedback`): estados de erro/sucesso/timeout/retry e feedback ao usuário
+- **Conversion** (`/hm-conversion`): aquisição, signup, pricing, checkout, upgrade ou lead capture
+- **Incident** (`/hm-incident`): somente hotfix/remediação ou follow-up de incidente
 - **Produto** (`/hm-product`): feature nova ou requisito/escopo com incerteza; bugfix puro pode marcar N/A
 - **API contract** (`/hm-api-contract`): mudanças em endpoints, payloads, schemas, webhooks ou integrações
 - **State machine** (`/hm-state-machine`): fluxos com múltiplos estados, async, retry, timeout, conflito ou background
@@ -247,6 +256,15 @@ As 21 skills de validação falam vocabulários diferentes. Traduza pra escala c
 | `/hm-ux-flow` | PASS / OPTIMIZE / REDESIGN por fluxo | REDESIGN em fluxo crítico = ALTO. OPTIMIZE = MEDIO. Empty state faltando = MEDIO. Spinner genérico = BAIXO |
 | `/hm-designer` | Atende a barra / reprovou + issues | Reprovou em tela de fluxo crítico = ALTO. Resto = MEDIO/BAIXO conforme o princípio violado |
 | `/hm-deploy` | OK/falhou por área + Pronto pra deploy / X issues | Secret exposto ou dado em risco = CRÍTICO (regra da skill). Não sobe do zero = ALTO. Resto = MEDIO |
+| `/hm-product` | Bem definido / Precisa discovery / BLOQUEADO | Problema/usuário indefinidos em feature nova = ALTO; caso contrário, reporta gap |
+| `/hm-api-contract` | Contract-ready / BLOQUEADO | Breaking contract ou divergência schema/runtime = ALTO |
+| `/hm-state-machine` | Modelado / GAP / BLOQUEADO | Estado impossível ou transição inválida crítica = ALTO |
+| `/hm-analytics` | Mensurável / Instrumentação incompleta | Success tracking falso ou experimento sem métrica = ALTO |
+| `/hm-accessibility` | Acessível no baseline / BLOQUEADO | Falha que impede tarefa essencial por teclado/AT = ALTO |
+| `/hm-copy` | Claro / Revisar / BLOQUEADO | Copy enganosa/ambígua em ação crítica = ALTO |
+| `/hm-error-feedback` | fiel / incompleto / BLOQUEADO | UI mente sobre estado = ALTO; vazamento técnico/sensível = CRÍTICO |
+| `/hm-conversion` | findings de friction / hipótese | Não auto-bloqueia; produz risco/hipótese |
+| `/hm-incident` | Resolvido / Parcial / Em andamento | Incidente ativo não mitigado pode bloquear ship da remediação |
 
 ### Reconciliação
 
