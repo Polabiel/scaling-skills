@@ -1,384 +1,391 @@
 ---
 name: hm-conversion
-description: Conversion-focused product and UX design guidance for hm-designer. Use when designing, reviewing, or modifying interfaces that influence acquisition, activation, signup, trial, upgrade, checkout, lead capture, onboarding, pricing, CTAs, forms, modals, or other customer conversion paths. Treat unnecessary interaction friction as a conversion risk and require explicit justification for friction that affects the primary action.
+description: Orientação de produto e UX focada em conversão para o hm-designer. Use ao criar, revisar ou modificar interfaces que influenciam aquisição, ativação, cadastro, teste, upgrade, checkout, captura de leads, onboarding, preços, CTAs, formulários, modais ou outros fluxos de conversão. Trate fricção de interação desnecessária como um risco de conversão e exija justificativa explícita para fricções que afetem a ação principal.
 ---
 
 # HM Conversion
 
-## Purpose
+## Objetivo
 
-Make conversion a first-class design constraint without reducing design to aggressive growth tactics.
+Tornar a conversão uma restrição de primeira classe no design sem reduzir o design a táticas agressivas de crescimento.
 
-This skill complements `hm-designer`:
-- `hm-designer` protects visual quality, hierarchy, consistency, responsiveness, and implementation fidelity.
-- `hm-conversion` evaluates whether the design makes the intended customer action easy to understand and execute.
-- `hm-ux-flow` evaluates the broader cognitive and interaction flow.
+Esta skill complementa:
+- `hm-designer`: protege qualidade visual, hierarquia, consistência, responsividade e fidelidade de implementação.
+- `hm-conversion`: avalia se o design torna a ação desejada pelo cliente fácil de entender e executar.
+- `hm-ux-flow`: avalia o fluxo cognitivo e de interação mais amplo.
 
-When a change affects a conversion path, apply all three lenses.
+Quando uma alteração afetar um fluxo de conversão, aplique as três perspectivas.
 
-## Core principle
+## Princípio central
 
-**Do not add friction at the moment of intent without a clear reason.**
+**Não adicione fricção no momento de intenção sem uma razão clara.**
 
-A UI can be visually polished and technically correct while still creating conversion friction. The job is to identify that friction before shipping.
+Uma interface pode ser visualmente refinada e tecnicamente correta e ainda assim criar fricção de conversão. O objetivo é identificar essa fricção antes do lançamento.
 
-Think in this sequence:
+Pense nesta sequência:
 
-`attention → comprehension → confidence → action`
+`atenção → compreensão → confiança → ação`
 
-Every unnecessary interaction between these stages is a potential abandonment point.
+Cada interação desnecessária entre essas etapas é um possível ponto de abandono.
 
-## Hard rules
+## Regras fundamentais
 
-### 1. Primary action must be reachable without unnecessary scrolling
+### 1. A ação principal deve ser alcançável sem rolagem desnecessária
 
-For high-intent surfaces such as:
-- signup
+Para superfícies de alta intenção, como:
+- cadastro
 - checkout
 - upgrade
-- purchase
-- trial activation
-- lead capture
-- pricing selection
-- confirmation of a commercial action
+- compra
+- ativação de teste
+- captura de lead
+- seleção de plano/preço
+- confirmação de uma ação comercial
 
-the primary CTA and the information required to make the decision should be visible or immediately reachable.
+o CTA principal e as informações necessárias para tomar a decisão devem estar visíveis ou ser imediatamente acessíveis.
 
-**Do not make the user scroll inside a modal merely because the content does not fit the viewport.**
+**Não faça o usuário rolar dentro de uma modal apenas porque o conteúdo não cabe no viewport.**
 
-Bad pattern:
-- modal opens
-- important content extends below the viewport
-- user must scroll inside the modal to discover the CTA
-- the CTA is not available at first glance
+Padrão ruim:
+- a modal abre
+- conteúdo importante fica abaixo do viewport
+- o usuário precisa rolar dentro da modal para descobrir o CTA
+- o CTA não está disponível à primeira vista
 
-Preferred patterns:
-- reduce non-essential content
-- restructure the hierarchy
-- use progressive disclosure
-- move secondary information elsewhere
-- make the modal responsive to the viewport
-- keep the CTA in a persistent footer when appropriate
-- split a genuinely complex task into explicit steps
+Padrões preferíveis:
+- reduzir conteúdo não essencial
+- reorganizar a hierarquia
+- usar divulgação progressiva
+- mover conteúdo secundário para fora do fluxo crítico
+- tornar a modal responsiva ao viewport
+- manter o CTA em um rodapé persistente quando apropriado
+- dividir uma tarefa genuinamente complexa em etapas explícitas
 
-Exception:
-Internal scrolling can be appropriate when the content itself is necessary and cannot reasonably be condensed, such as legal terms, long lists, advanced configuration, or genuinely complex workflows. Even then, keep the primary action and navigation model obvious.
+Exceção:
+Rolagem interna pode ser apropriada quando o conteúdo é realmente necessário e não pode ser condensado de forma razoável, como termos legais, listas longas, configurações avançadas ou fluxos genuinamente complexos. Mesmo nesses casos, mantenha a ação principal e o modelo de navegação óbvios.
 
-### 2. Never confuse visual completeness with conversion quality
+### 2. Nunca confunda completude visual com qualidade de conversão
 
-A design is not better merely because it contains more information.
+Um design não é melhor simplesmente porque contém mais informações.
 
-Before adding UI, ask:
-- Does this help the user decide?
-- Does this reduce uncertainty?
-- Does this increase trust?
-- Does this help the user complete the intended action?
+Antes de adicionar uma interface, pergunte:
+- Isso ajuda o usuário a decidir?
+- Isso reduz incerteza?
+- Isso aumenta confiança?
+- Isso ajuda o usuário a concluir a ação desejada?
 
-If not, consider removing it, collapsing it, or moving it out of the critical path.
+Se não, considere remover, recolher ou mover esse conteúdo para fora do caminho crítico.
 
-### 3. Minimize interaction cost
+### 3. Minimize o custo de interação
 
-For conversion-critical actions, inspect:
-- number of clicks/taps
-- amount of typing
-- scrolling required
-- context switching
-- repeated information
-- unnecessary confirmations
-- hidden CTAs
-- disabled states with unclear causes
-- fields that are not required for the immediate goal
+Para ações críticas de conversão, analise:
+- quantidade de cliques/toques
+- quantidade de texto digitado
+- rolagem necessária
+- troca de contexto
+- informações repetidas
+- confirmações desnecessárias
+- CTAs ocultos
+- estados desabilitados sem causa clara
+- campos que não são necessários para o objetivo imediato
 
-Do not optimize for the theoretical minimum number of interactions at the expense of clarity or trust. The goal is **low unnecessary friction**, not blindly fewer steps.
+Não otimize para o menor número teórico de interações sacrificando clareza ou confiança. O objetivo é **baixa fricção desnecessária**, e não simplesmente menos etapas.
 
-### 4. Preserve decision context
+### 4. Preserve o contexto da decisão
 
-The user should understand:
-- what they are doing
-- why they are doing it
-- what happens next
-- what the primary action will cause
+O usuário deve entender:
+- o que está fazendo
+- por que está fazendo
+- o que acontecerá depois
+- o que a ação principal causará
 
-Avoid interfaces where the user must close a modal, remember information, navigate elsewhere, and return to complete the decision.
+Evite interfaces em que o usuário precisa fechar uma modal, memorizar informações, navegar para outro lugar e retornar para concluir a decisão.
 
-### 5. Mobile is a conversion surface, not a smaller desktop
+### 5. Mobile é uma superfície de conversão, não um desktop menor
 
-For mobile:
-- assume less vertical space
-- test modal height
-- check whether the CTA remains accessible
-- avoid nested scrolling where possible
-- ensure keyboard interaction does not hide the action
-- verify sticky/fixed CTAs do not obscure content
-- check tap target sizes
-- test the complete flow, not only the initial viewport
+Para mobile:
+- considere o menor espaço vertical
+- teste a altura da modal
+- verifique se o CTA continua acessível
+- evite rolagens aninhadas quando possível
+- garanta que o teclado não esconda a ação
+- verifique se CTAs fixos não cobrem conteúdo
+- confira o tamanho das áreas de toque
+- teste o fluxo completo, não apenas o viewport inicial
 
-## Conversion friction checklist
+## Checklist de fricção de conversão
 
-When reviewing a design, explicitly check:
+Ao revisar um design, verifique explicitamente:
 
-### Visibility
-- Is the primary CTA visible?
-- Is the value proposition visible?
-- Is the next action obvious?
-- Is important pricing or commitment information visible before action?
+### Visibilidade
+- O CTA principal está visível?
+- A proposta de valor está visível?
+- A próxima ação é óbvia?
+- Preço, compromisso ou informação importante está visível antes da ação?
 
-### Friction
-- Does the user need to scroll to act?
-- Does the user need to open another element to understand the decision?
-- Are there unnecessary fields?
-- Are there unnecessary steps?
-- Is there a nested scroll container?
-- Is there a modal inside another modal?
-- Is the user forced to repeat information?
+### Fricção
+- O usuário precisa rolar para agir?
+- Precisa abrir outro elemento para entender a decisão?
+- Existem campos desnecessários?
+- Existem etapas desnecessárias?
+- Existe um container de rolagem aninhado?
+- Existe uma modal dentro de outra modal?
+- O usuário é obrigado a repetir informações?
 
-### Trust
-- Is the action understandable?
-- Are important costs, commitments, limitations, or consequences clear?
-- Are errors recoverable?
-- Does the UI feel predictable?
+### Confiança
+- A ação é compreensível?
+- Custos, compromissos, limitações ou consequências importantes estão claros?
+- Os erros podem ser recuperados?
+- A interface é previsível?
 
-### Hierarchy
-- Is one action clearly primary?
-- Are secondary actions visually subordinate?
-- Does decorative content compete with the CTA?
-- Is important information buried below low-value content?
+### Hierarquia
+- Existe uma única ação claramente primária?
+- As ações secundárias estão visualmente subordinadas?
+- Elementos decorativos competem com o CTA?
+- Informações importantes estão escondidas abaixo de conteúdo de baixo valor?
 
-## How to report a conversion issue
+## Como reportar um problema de conversão
 
-Do not merely say "this UX is bad."
+Não diga apenas "essa UX é ruim".
 
-State:
+Informe:
 
-1. **Observation** — what the interface currently does.
-2. **Friction** — what extra effort the user must perform.
-3. **Conversion risk** — how that friction can interrupt the intended action.
-4. **Recommendation** — the smallest design change that removes or reduces the friction.
-5. **Validation** — how to verify the change in the actual viewport/device.
+1. **Observação** — o que a interface faz atualmente.
+2. **Fricção** — qual esforço adicional o usuário precisa realizar.
+3. **Risco de conversão** — como essa fricção pode interromper a ação desejada.
+4. **Recomendação** — a menor alteração que remove ou reduz a fricção.
+5. **Validação** — como verificar a alteração no viewport/dispositivo real.
 
-Example:
+Exemplo:
 
-> **Observation:** The upgrade modal is taller than the viewport and the CTA is below the fold.
+> **Observação:** A modal de upgrade é mais alta que o viewport e o CTA fica abaixo da área visível.
 >
-> **Friction:** The user must scroll inside the modal before they can continue.
+> **Fricção:** O usuário precisa rolar dentro da modal antes de continuar.
 >
-> **Conversion risk:** The primary action is separated from the initial decision context, creating an unnecessary interaction at a high-intent point.
+> **Risco de conversão:** A ação principal fica separada do contexto inicial da decisão, criando uma interação desnecessária em um momento de alta intenção.
 >
-> **Recommendation:** Reduce secondary content and keep the CTA visible in a persistent modal footer. If all content is mandatory, split the flow into explicit steps.
+> **Recomendação:** Reduza conteúdo secundário e mantenha o CTA visível em um rodapé persistente da modal. Se todo o conteúdo for obrigatório, divida o fluxo em etapas explícitas.
 >
-> **Validation:** Test at the target desktop and mobile viewport sizes and verify that the user can understand the offer and reach the primary CTA without accidental nested scrolling.
+> **Validação:** Teste nos viewports desktop e mobile-alvo e verifique se o usuário consegue entender a oferta e chegar ao CTA principal sem rolagem interna acidental.
 
-## Severity
+## Severidade
 
-Use these labels descriptively, not as scores:
+Use estes rótulos de forma descritiva, não como pontuações:
 
-- **Blocker:** The primary conversion action is inaccessible, broken, obscured, or effectively hidden.
-- **High:** Significant unnecessary friction exists directly before the intended conversion action.
-- **Medium:** Friction or hierarchy problems may slow comprehension or action but do not prevent completion.
-- **Low:** Minor polish opportunities with limited effect on the critical path.
+- **Bloqueador:** a ação principal de conversão está inacessível, quebrada, obstruída ou efetivamente escondida.
+- **Alta:** existe fricção significativa e desnecessária diretamente antes da ação de conversão.
+- **Média:** problemas de fricção ou hierarquia podem atrasar compreensão ou ação, mas não impedem a conclusão.
+- **Baixa:** oportunidades menores de refinamento com efeito limitado no caminho crítico.
 
-## Required review behavior for hm-designer
+## Comportamento obrigatório do hm-designer
 
-When `hm-designer` reviews a conversion-related screen:
+Quando o `hm-designer` revisar uma tela relacionada à conversão:
 
-1. Identify the intended user action.
-2. Identify the primary CTA.
-3. Determine whether the CTA and decision-critical information are accessible at the initial viewport.
-4. Inspect every scroll container, especially modal and drawer scroll areas.
-5. Check mobile separately.
-6. Identify unnecessary friction.
-7. Recommend the smallest change that preserves visual quality while reducing friction.
-8. Do not claim that a change will increase conversion unless supported by measured evidence. Use language such as "conversion risk", "friction", or "hypothesis" when evidence is unavailable.
+1. Identifique a ação que o usuário deve realizar.
+2. Identifique o CTA principal.
+3. Determine se o CTA e as informações críticas para a decisão estão acessíveis no viewport inicial.
+4. Inspecione todos os containers de rolagem, especialmente modais e drawers.
+5. Verifique mobile separadamente.
+6. Identifique fricções desnecessárias.
+7. Recomende a menor alteração que preserve a qualidade visual enquanto reduz a fricção.
+8. Não afirme que uma alteração aumentará a conversão sem evidência mensurada. Sem evidência, use termos como "risco de conversão", "fricção" ou "hipótese".
 
-## Anti-patterns
+## Anti-padrões
 
-Flag these when relevant:
+Sinalize quando relevante:
 
-- CTA hidden below modal scroll
-- nested scrolling in conversion-critical dialogs
-- excessive form fields before the value is established
-- low-contrast or ambiguous primary CTA
-- multiple competing primary CTAs
-- important price/commitment information hidden behind interaction
-- unnecessary confirmation screens
-- destructive or commercial actions with unclear labels
-- required information mixed with optional information without distinction
-- promotional copy that overwhelms the actual action
-- desktop layout that becomes unusable on mobile
-- sticky UI that covers the CTA or form fields
-- loading states that provide no feedback during a high-intent action
+- CTA escondido abaixo da rolagem da modal
+- rolagem aninhada em diálogos críticos de conversão
+- excesso de campos antes de estabelecer o valor
+- CTA principal com baixo contraste ou rótulo ambíguo
+- múltiplos CTAs competindo como ação principal
+- preço ou compromisso importante escondido atrás de uma interação
+- telas de confirmação desnecessárias
+- ações destrutivas ou comerciais com rótulos pouco claros
+- informações obrigatórias misturadas com opcionais sem distinção
+- copy promocional que ofusca a ação real
+- layout desktop que se torna inutilizável no mobile
+- UI fixa cobrindo CTA ou campos do formulário
+- estados de carregamento sem feedback durante uma ação de alta intenção
 
-## Evidence discipline
+## Disciplina de evidência
 
-Conversion advice must distinguish between:
-- established usability constraints
-- design heuristics
-- product assumptions
-- measured analytics
-- A/B test evidence
+Uma recomendação de conversão deve distinguir entre:
+- restrições de usabilidade estabelecidas
+- heurísticas de design
+- suposições sobre o produto
+- analytics mensurados
+- evidências de testes A/B
 
-Never invent a conversion uplift percentage.
+Nunca invente um percentual de aumento de conversão.
 
-If analytics are available, ask for or inspect:
-- modal open → CTA click rate
-- CTA click → completion rate
-- form start → completion rate
-- step-by-step drop-off
-- mobile vs desktop conversion
-- error rate
-- time to completion
+Se houver analytics disponíveis, solicite ou analise:
+- abertura da modal → taxa de clique no CTA
+- clique no CTA → taxa de conclusão
+- início do formulário → taxa de conclusão
+- abandono etapa a etapa
+- conversão mobile vs. desktop
+- taxa de erro
+- tempo para conclusão
 
-Use measured product data to validate hypotheses whenever possible.
+Use dados reais do produto para validar hipóteses sempre que possível.
 
+## Princípios de conversão baseados em evidências
 
-## Evidence-backed conversion principles
+Use os seguintes achados como **heurísticas baseadas em evidências**, não como leis universais. O efeito depende do produto, público, dispositivo, intenção, origem do tráfego e implementação. Valide recomendações importantes com analytics ou experimentos do próprio produto.
 
-Use these as **evidence-backed heuristics**, not universal laws. Effects depend on product, audience, device, intent, traffic source, and implementation. Validate consequential recommendations with the product's own analytics or experiments.
+### 1. Reduza a complexidade desnecessária do checkout
 
-### 1. Reduce unnecessary checkout complexity
+A pesquisa de checkout da Baymard de 2026 relata que 17% dos compradores online dos EUA disseram ter abandonado um pedido no trimestre anterior porque o checkout era longo ou complicado. O benchmark encontrou uma média de 23,48 elementos de formulário exibidos por padrão, enquanto a pesquisa de usabilidade indica que muitos checkouts podem ser reduzidos para aproximadamente 12–14 elementos (7–8 campos efetivos).
 
-Baymard's 2026 checkout research reports that 17% of US online shoppers said they had abandoned an order in the previous quarter because the checkout was too long or complicated. Its benchmark found an average of 23.48 form elements displayed by default, while its usability research found many checkouts can be reduced to roughly 12–14 elements (7–8 actual fields).
+**Implicação de design:** minimize campos e decisões que não sejam necessários para concluir a ação imediata. Não otimize simplesmente para menos "etapas"; a quantidade de informação que o usuário precisa processar e inserir também importa.
 
-**Design implication:** minimize fields and decision points that are not necessary to complete the immediate action. Do not optimize merely for fewer "steps"; the amount of information the user must process and enter matters more.
+**Fonte:** Baymard Institute — "Reasons for Cart Abandonment" e "Checkout Optimization: Minimize Form Fields".
 
-**Source:** Baymard Institute — "Reasons for Cart Abandonment" and "Checkout Optimization: Minimize Form Fields".
+### 2. Trate rolagem desnecessária como fricção em superfícies de alta intenção
 
-### 2. Treat unnecessary scrolling as friction in high-intent surfaces
+As evidências **não** estabelecem que toda modal com rolagem reduz conversão. A regra defensável é mais específica:
 
-The evidence does **not** establish that every scrollable modal lowers conversion. The defensible rule is narrower:
+> Quando a ação principal ou as informações necessárias para a decisão ficam escondidas atrás de uma rolagem desnecessária, a interface adiciona custo de interação em um momento de alta intenção.
 
-> When the primary action or decision-critical information is hidden behind unnecessary scrolling, the interface introduces additional interaction cost at a high-intent moment.
+A NN/G relata que usuários dedicam menos atenção a conteúdo abaixo da área inicial visível e documenta problemas relacionados à rolagem excessiva em mobile.
 
-NN/G reports that users allocate less attention to content below the fold and documents excessive scrolling problems on mobile.
+**Implicação de design:** em modais de cadastro, upgrade, checkout, compra e captura de leads, tente primeiro manter o contexto da decisão e o CTA principal acessíveis sem rolagem interna. Se o conteúdo realmente não couber, use divulgação progressiva, uma área de ação persistente ou um fluxo dedicado em múltiplas etapas/páginas.
 
-**Design implication:** for signup, upgrade, checkout, purchase, and lead-capture modals, first try to keep the decision context and primary CTA accessible without internal scrolling. If the content genuinely cannot fit, use progressive disclosure, a persistent action area, or a dedicated multi-step/page flow.
+Isso é uma **heurística**, não uma afirmação de aumento fixo de conversão.
 
-This is a **heuristic**, not a claim of a fixed conversion uplift.
+**Fontes:** Nielsen Norman Group — "Scrolling and Scrollbars"; "Mobile Web 2009 = Desktop Web 1998".
 
-**Sources:** Nielsen Norman Group — "Scrolling and Scrollbars"; "Mobile Web 2009 = Desktop Web 1998".
+### 3. Modais possuem um custo de interação
 
-### 3. Modal dialogs have an interaction-cost tax
+A NN/G descreve modais como interrupções que exigem atenção imediata, interrompem o fluxo de trabalho, podem causar perda de contexto e adicionam um objetivo extra: dispensar ou concluir o diálogo. A NN/G recomenda especificamente evitar modais desnecessárias em processos de alto risco, como checkout.
 
-NN/G describes modal dialogs as interruptions that require immediate attention, interrupt workflow, can cause context loss, and add an extra goal: dismissing or completing the dialog. NN/G specifically recommends avoiding unnecessary modals in high-stakes processes such as checkout.
+**Implicação de design:** uma modal de conversão deve justificar a interrupção. Se o usuário precisa pesquisar ou consultar informações complexas fora da modal para tomar a decisão, prefira uma página ou fluxo não modal.
 
-**Design implication:** a conversion modal must justify its interruption. If the user needs complex research or information outside the modal to make the decision, prefer a page or nonmodal flow.
+**Fonte:** Nielsen Norman Group — "Modal & Nonmodal Dialogs: When (& When Not) to Use Them".
 
-**Source:** Nielsen Norman Group — "Modal & Nonmodal Dialogs: When (& When Not) to Use Them".
+### 4. Simplifique formulários, mas não transforme quantidade de campos em regra absoluta
 
-### 4. Simplify forms, but do not worship a field-count rule
+A NN/G cita um estudo da CHI em que formulários que seguiam princípios básicos de usabilidade obtiveram 78% de submissões na primeira tentativa, contra 42% nos formulários que violavam esses princípios. A NN/G também ressalta que remover um campo pode melhorar a conclusão, mas o valor comercial da informação coletada precisa ser considerado.
 
-NN/G cites a CHI study in which forms following basic usability guidelines produced 78% first-try submissions versus 42% for forms violating those guidelines. NN/G also emphasizes that removing a field can improve completion, but the business value of the information collected must be considered.
+A Baymard também aponta que a quantidade de campos do formulário tem impacto maior na usabilidade do checkout do que simplesmente a quantidade de etapas.
 
-Baymard similarly finds that form-field count has a larger impact on checkout usability than the number of checkout steps.
+**Implicação de design:** elimine campos que não apoiem o objetivo imediato do usuário ou do negócio; automatize informações quando possível; adie coleta de dados opcionais até depois da conversão principal.
 
-**Design implication:** eliminate fields that do not support the immediate user or business goal; automate information where possible; defer optional data collection until after the primary conversion.
+**Fontes:** Nielsen Norman Group — "Website Forms Usability"; Baymard Institute — "Checkout Optimization: Minimize Form Fields".
 
-**Sources:** Nielsen Norman Group — "Website Forms Usability"; Baymard Institute — "Checkout Optimization: Minimize Form Fields".
+### 5. Mantenha labels e recuperação de erros persistentes
 
-### 5. Make labels and error recovery persistent
+A pesquisa da NN/G sobre formulários indica que labels que existem apenas como placeholder dificultam lembrar o que pertence ao campo, revisar informações inseridas e recuperar-se de erros. Os testes da Baymard também relacionam tratamento pouco claro de campos obrigatórios/opcionais a erros de validação, confusão, checkout mais lento e abandono.
 
-NN/G's form research finds that placeholder-only labels make it harder to remember what belongs in a field, review entered information, and recover from errors. Baymard's checkout testing likewise links unclear required/optional field treatment to validation errors, confusion, slower checkout, and abandonment.
+**Implicação de design:** use labels persistentes, estados obrigatório/opcional explícitos quando apropriado, mensagens de erro locais e caminhos de recuperação que preservem os dados já preenchidos.
 
-**Design implication:** use persistent labels, explicit required/optional states where appropriate, inline/local error messages, and recovery paths that preserve entered data.
+**Fontes:** Nielsen Norman Group — "Placeholders in Form Fields Are Harmful"; Baymard Institute — "Required and Optional Form Fields".
 
-**Sources:** Nielsen Norman Group — "Placeholders in Form Fields Are Harmful"; Baymard Institute — "Required and Optional Form Fields".
+### 6. Otimize esforço percebido, não uma quantidade arbitrária de etapas
 
-### 6. Optimize perceived effort, not arbitrary step count
+A Baymard alerta explicitamente que a quantidade de etapas do checkout é um alvo ruim de otimização por si só. Um fluxo mais longo pode ser usável quando cada etapa é focada; um fluxo curto ainda pode ser difícil quando cada tela contém campos ou decisões demais.
 
-Baymard explicitly warns that the number of checkout steps is a poor optimization target by itself. A longer flow can be usable when each step is focused; a short flow can still be difficult when each screen contains too many fields or decisions.
+**Implicação de design:** avalie:
+- campos
+- escolhas
+- digitação
+- rolagem
+- trocas de contexto
+- recuperação de erros
+- incerteza
+- informações repetidas
 
-**Design implication:** evaluate fields, choices, typing, scrolling, context switches, error recovery, uncertainty, and repeated information.
+Não aplique "uma página é sempre melhor" ou "menos etapas é sempre melhor" como regras universais.
 
-Do not apply "one page is always better" or "fewer steps is always better" as blanket rules.
+**Fonte:** Baymard Institute — "Checkout Optimization: Minimize Form Fields".
 
-**Source:** Baymard Institute — "Checkout Optimization: Minimize Form Fields".
+### 7. Velocidade faz parte do design de conversão
 
-### 7. Speed is part of conversion design
+A pesquisa mobile da Google/SOASTA de 2017 encontrou que, conforme o tempo de carregamento aumentava de 1 para 3 segundos, a probabilidade de bounce aumentava 32%; de 1 para 5 segundos, aumentava 90%. Esses são dados históricos agregados de mobile, não uma curva universal de conversão.
 
-Google/SOASTA's 2017 mobile research found that as page load time increased from 1 second to 3 seconds, the probability of bounce increased 32%; from 1 to 5 seconds it increased 90%. These are historical aggregate mobile findings, not a universal conversion curve.
+**Implicação de design:** trate performance de carregamento como parte da experiência de conversão. Meça a performance de usuários reais e priorize atrasos que acontecem imediatamente antes ou durante uma ação de conversão.
 
-**Design implication:** treat loading performance as part of the conversion experience. Measure real-user performance and prioritize delays that occur immediately before or during a conversion action.
+**Fonte:** pesquisa mobile Google/SOASTA, 2017.
 
-**Source:** Google/SOASTA mobile page-speed research, 2017.
+### 8. Testes A/B podem derrubar "boas práticas" de UX
 
-### 8. A/B tests can overturn UX "best practices"
+A HubSpot documentou um experimento em que um formulário de leads com duas colunas converteu 22% melhor do que a variante de uma coluna, com 99% de confiança. A própria HubSpot observa que o resultado era específico daquele formulário longo de 13 campos e não deve ser generalizado como "duas colunas são melhores".
 
-HubSpot documented an experiment where a two-column lead form converted 22% better than its one-column variant at a 99% confidence level. HubSpot explicitly notes that the result was specific to its long 13-field form and should not be generalized into "two columns are better."
+A VWO publica estudos de caso em que redesigns produziram mudanças mensuráveis, incluindo o aumento reportado de 20,45% na conversão mobile de formulário da ForestView após reduzir rolagem para cima/baixo e alterar a navegação de produtos.
 
-VWO publishes case studies where redesigns produced measurable changes, including ForestView's reported 20.45% mobile form-conversion increase after reducing up/down scrolling and changing product navigation.
+**Implicação de design:** use pesquisas para gerar hipóteses, não para eliminar a necessidade de experimentação. Uma convenção que normalmente ajuda pode perder quando tarefa, densidade de conteúdo, público ou objetivo comercial mudam.
 
-**Design implication:** use research to generate hypotheses, not to skip experimentation. A convention that is usually helpful can lose when the task, content density, audience, or business objective changes.
+**Fontes:** HubSpot — "Disproving Best Practices: The One- vs. Two-Column Form Test"; VWO — "ForestView improved form conversion by 20.45%".
 
-**Sources:** HubSpot — "Disproving Best Practices: The One- vs. Two-Column Form Test"; VWO — "ForestView improved form conversion by 20.45%".
+### 9. Use evidência específica do negócio antes de declarar uma vitória de conversão
 
-### 9. Use business-specific evidence before declaring a conversion win
+Um aumento reportado em um case study de fornecedor é evidência sobre aquele experimento, não um percentual transferível para qualquer produto.
 
-A reported uplift from a vendor case study is evidence about that experiment, not a transferable percentage.
+Ao validar uma alteração, prefira:
+1. teste A/B controlado com métrica principal definida
+2. resultados segmentados por dispositivo e intenção do tráfego
+3. métricas do funil, não apenas cliques
+4. incerteza estatística/confiança reportada pela plataforma de experimento
+5. resultados posteriores do negócio, não apenas microconversões
 
-When validating a change, prefer:
-1. controlled A/B test with a defined primary metric
-2. segmented results by device and traffic intent
-3. funnel-level metrics rather than only clicks
-4. statistical uncertainty/confidence reported by the experiment platform
-5. downstream business outcomes, not just micro-conversions
+Métricas úteis:
+- exposição → clique no CTA
+- clique no CTA → conclusão
+- início do formulário → conclusão
+- abandono entre etapas
+- conclusão mobile vs. desktop
+- taxa de erro
+- tempo para conclusão
+- receita por visitante / taxa de lead qualificado quando relevante
 
-Useful metrics:
-- exposure → CTA click
-- CTA click → completion
-- form start → completion
-- step-to-step drop-off
-- mobile vs desktop completion
-- error rate
-- time to completion
-- revenue per visitor / qualified lead rate when relevant
+## Hierarquia de evidências
 
-## Evidence hierarchy
+Ao fazer uma recomendação de conversão, dê este peso às evidências:
 
-When making a conversion recommendation, weigh evidence in this order:
+1. **Experimento do próprio produto ou dados comportamentais da interface real**
+2. **Testes de usabilidade diretamente com o público-alvo**
+3. **Pesquisa independente de UX em larga escala**
+4. **Pesquisa acadêmica revisada por pares**
+5. **Cases de fornecedores com metodologia divulgada**
+6. **Heurísticas de especialistas**
+7. **Intuição do designer**
 
-1. **Product experiment or behavioral data from the actual interface**
-2. **Direct usability testing with the target audience**
-3. **Large-scale independent UX research**
-4. **Peer-reviewed academic research**
-5. **Vendor case studies with disclosed methodology**
-6. **Expert heuristics**
-7. **Designer intuition**
+Não apresente os níveis 5–7 como se fossem prova causal.
 
-Do not present levels 5–7 as if they were causal proof.
+## O que estas evidências NÃO justificam
 
-## What this evidence does NOT justify
+Não transforme estas afirmações em regras universais:
 
-Do not encode these as universal rules:
+- "Toda modal nunca deve ter rolagem."
+- "Tudo precisa estar acima da dobra."
+- "Menos campos sempre significa mais receita."
+- "Formulários de uma coluna sempre convertem melhor."
+- "Menos etapas de checkout sempre convertem melhor."
+- "Uma determinada cor de CTA aumenta conversão."
+- "Uma alteração de UX aumentará conversão em um percentual específico."
 
-- "Every modal must never scroll."
-- "Everything must be above the fold."
-- "Fewer form fields always means more revenue."
-- "One-column forms always convert better."
-- "Fewer checkout steps always convert better."
-- "A particular CTA color increases conversion."
-- "A UX change will increase conversion by a specific percentage."
+Em vez disso, aplique o mecanismo subjacente:
 
-Instead, encode the underlying mechanism:
+**Reduza esforço desnecessário, preserve o contexto da decisão, torne a ação principal fácil de descobrir e executar e valide alterações relevantes com dados reais dos usuários.**
 
-**Reduce unnecessary effort, preserve decision context, make the primary action easy to discover and execute, and validate consequential changes with real user data.**
+## Formato de saída
 
-## Output format
+Para uma revisão focada em conversão, use:
 
-For a conversion-focused review, use:
+### Intenção de conversão
+Qual ação o usuário deve realizar?
 
-### Conversion intent
-What action should the user take?
+### Fricção encontrada
+O que torna essa ação mais difícil do que deveria?
 
-### Friction found
-What makes that action harder than necessary?
+### Risco
+Por que essa fricção pode interromper o fluxo desejado?
 
-### Risk
-Why could the friction interrupt the intended flow?
+### Alteração recomendada
+O que deve mudar?
 
-### Recommended change
-What should change?
+### Validação
+Qual viewport, dispositivo, interação ou métrica deve ser verificada?
 
-### Validation
-What viewport, device, interaction, or metric should be checked?
-
-Keep recommendations concrete and implementation-aware.
+Mantenha as recomendações concretas e orientadas à implementação.
