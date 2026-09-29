@@ -120,6 +120,8 @@ done
 ```
 
 > Use `./setup --doctor` para validar frontmatter, runtimes e pré-requisitos sem instalar.
+>
+> **Atualização segura:** quando uma skill já existir no destino, o `./setup` pede confirmação. Responda `y`/ `Y` para atualizar/substituir as skills existentes; qualquer outra resposta (inclusive Enter) preserva as existentes. Skills novas são instaladas normalmente.
 
 ---
 
