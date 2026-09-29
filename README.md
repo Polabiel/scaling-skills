@@ -81,14 +81,14 @@ git clone https://github.com/Polabiel/scaling-skills ~/.kiro/skills/scaling-skil
 cp -R ~/.kiro/skills/scaling-skills/*/ ~/.kiro/skills/
 ```
 
-### VS Code
+### VS Code/Copilot
 
-Igual ao Claude Code (o VS Code lê `~/.claude/skills/`):
+O VS Code suporta skills pessoais em `~/.copilot/skills/`.
 
 ```bash
-git clone https://github.com/Polabiel/scaling-skills ~/.claude/skills/scaling-skills
-for d in ~/.claude/skills/scaling-skills/*/; do
-  ln -s "$d" ~/.claude/skills/"$(basename "$d")"
+git clone https://github.com/Polabiel/scaling-skills ~/.copilot/skills/scaling-skills
+for d in ~/.copilot/skills/scaling-skills/*/; do
+  [ -f "$d/SKILL.md" ] && ln -s "$d" ~/.copilot/skills/"$(basename "$d")"
 done
 ```
 
