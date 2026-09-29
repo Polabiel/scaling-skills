@@ -1,0 +1,17 @@
+name: Validate scaling-skills
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate setup syntax
+        run: bash -n setup setup.sh
+
+      - name: Validate skills
+        run: ./setup --doctor
