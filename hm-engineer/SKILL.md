@@ -37,15 +37,15 @@ Se qualquer um desses existe, é finding CRÍTICO automático.
 | # | Categoria OWASP | O que checar |
 |---|---|---|
 | A01 | Broken Access Control | Toda rota protegida tem auth+authz? RBAC/ABAC enforced? Sem IDOR? |
-| A02 | Cryptographic Failures | Secrets em env vars (nunca hardcoded)? Hashing com bcrypt/argon2? JWT com algoritmo seguro? |
-| A03 | Injection | SQL via ORM parameterizado? XSS sanitizado? Command injection impossível? |
-| A04 | Insecure Design | Trust boundaries definidas? Rate limiting em endpoints públicos? Input validation em toda boundary? |
-| A05 | Security Misconfiguration | CORS restrito (nunca `*` em prod)? Debug desabilitado em prod? Headers de segurança? |
-| A06 | Vulnerable Components | Dependências com CVEs conhecidas? Lock files commitados? Audit limpo? |
-| A07 | Auth Failures | Brute force protegido? Session timeout? MFA quando aplicavel? Password policy? |
-| A08 | Data Integrity | Inputs validados antes de deserializar? Sem eval/exec de dados externos? |
-| A09 | Logging Failures | Eventos de segurança logados? Sem secrets nos logs? Audit trail? |
-| A10 | SSRF | Requests a URLs externas validadas? Sem user input em URLs internas? |
+| A02 | Security Misconfiguration | CORS restrito? Debug desabilitado em prod? Headers e defaults de segurança? |
+| A03 | Software Supply Chain Failures | Dependências, CI actions, imagens base e artefatos têm origem e versão rastreáveis? |
+| A04 | Cryptographic Failures | Secrets em env vars (nunca hardcoded)? Hashing com bcrypt/argon2? JWT com algoritmo seguro? |
+| A05 | Injection | SQL via ORM parameterizado? XSS sanitizado? Command injection impossível? |
+| A06 | Insecure Design | Trust boundaries definidas? Rate limiting em endpoints públicos? Input validation em toda boundary? |
+| A07 | Authentication Failures | Brute force protegido? Session timeout? MFA quando aplicavel? Password policy? |
+| A08 | Software or Data Integrity Failures | Inputs validados antes de deserializar? Sem eval/exec de dados externos? |
+| A09 | Security Logging & Alerting Failures | Eventos de segurança logados? Sem secrets nos logs? Alertas e audit trail? |
+| A10 | Mishandling of Exceptional Conditions | Timeout, cancelamento e falhas parciais têm estado e recuperação definidos? Sem fail-open? |
 
 **Severidade proporcional ao impacto real.** SQL injection = CRÍTICO. Health check raso = MEDIO. Não inflar findings.
 
