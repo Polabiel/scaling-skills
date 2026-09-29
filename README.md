@@ -2,7 +2,7 @@
 
 Minhas skills baseadas na Filosofia Higher Mind e nas minhas experiências com código como dev.
 
-Coleção de **32 skills** para agentes de IA (padrão [Agent Skills](https://agentskills.io) — uma pasta com `SKILL.md`):
+Coleção de **31 skills** para agentes de IA (padrão [Agent Skills](https://agentskills.io) — uma pasta com `SKILL.md`):
 
 | Skill | O que faz |
 |---|---|
@@ -37,26 +37,7 @@ Coleção de **32 skills** para agentes de IA (padrão [Agent Skills](https://ag
 | [`hm-state-machine`](hm-state-machine/SKILL.md) | Modela estados, eventos, transições e fluxos assíncronos |
 | [`hm-ux-flow`](hm-ux-flow/SKILL.md) | Validação de fluxo cognitivo end-to-end (3 tipos de friction) |
 | [`hm-validate-all`](hm-validate-all/SKILL.md) | Orquestrador pré-ship que dispara as skills de validação em ondas |
-| [`gsd`](gsd/SKILL.md) | Referência de aplicação do GSD (Goal-Driven Development) — loop de fases Discuss → Plan → Execute → Verify → Ship |
-
 ---
-
-## GSD (Goal-Driven Development)
-
-O [`gsd`](gsd/SKILL.md) é uma **skill de referência**: ela não substitui o framework, mas ensina o agente a aplicar a metodologia GSD e instalar o GSD Core no runtime atual.
-
-- **O que é:** framework de context-engineering e spec-driven development que conduz agentes de IA por um loop disciplinado de fases (**Discuss → Plan → Execute → Verify → Ship**), combatendo o *context rot* com subagentes de contexto fresco e verificação real.
-- **Site:** https://opengsd.net/ · **Repositório:** https://github.com/open-gsd/gsd-core
-- **Instalação do GSD Core:** o `setup` instala o GSD Core **do repositório oficial via npx** (nunca da pasta `gsd/` local, que é só referência):
-
-```bash
-npx @opengsd/gsd-core@latest --claude --global     # Claude Code / VS Code
-npx @opengsd/gsd-core@latest --opencode --global   # Opencode
-```
-
-O instalador oficial aplica as transformações corretas por runtime (skills, agents, hooks, commands). O GSD Core **não suporta Kiro** (sem flag `--kiro`). Depois de instalado: `/gsd-new-project` (projeto novo) ou `/gsd-onboard` (codebase existente).
-
-> **Como se relacionam:** o **GSD** estrutura *como* o trabalho é conduzido (fases, contexto, verificação); as skills **hm-\*** validam a qualidade do que é construído (segurança, performance, QA, design, dados). Use os dois juntos — ex.: `/hm-validate-all` como gate antes do Ship.
 
 ## Instalação (1 comando)
 
@@ -64,20 +45,20 @@ O instalador oficial aplica as transformações corretas por runtime (skills, ag
 git clone https://github.com/Polabiel/scaling-skills ~/.claude/skills/scaling-skills && cd ~/.claude/skills/scaling-skills && chmod +x setup && ./setup
 ```
 
-O `setup` detecta quais ferramentas você tem instaladas e instala as skills em cada uma automaticamente.
+O `setup` detecta o sistema operacional e os runtimes instalados e instala as skills nos diretórios nativos. Use `./setup --doctor` para validar a máquina sem instalar nada.
 
 ### Onde cada ferramenta recebe as skills
 
 | Ferramenta | Diretório | Modo | GSD Core |
 |---|---|---|---|
 | **Claude Code** | `~/.claude/skills/` | symlink | via npx (`--claude`) |
-| **VS Code** | `~/.claude/skills/` | symlink | via npx (`--claude`) |
+| **VS Code/Copilot** | `~/.copilot/skills/` | symlink | via runtime `--copilot` |
 | **Kiro** | `~/.kiro/skills/` | cópia | não suportado |
 | **Opencode** | `~/.config/opencode/skills/` | symlink | via npx (`--opencode`) |
 
 > **Por que o Kiro usa cópia?** O Kiro IDE não segue symlinks em `~/.kiro/skills/` (issue [kirodotdev/Kiro#6401](https://github.com/kirodotdev/Kiro/issues/6401)). Por isso o setup copia as pastas para o Kiro — se você atualizar o repositório, rode o `setup` de novo para sincronizar.
 >
-> **VS Code** lê skills pessoais de `~/.claude/skills/` (além de `~/.agents/skills/` e `~/.copilot/skills/`), então a instalação do Claude Code já cobre o VS Code.
+> **VS Code/Copilot** recebe as skills em `~/.copilot/skills/`, seu diretório pessoal nativo.
 
 ---
 
@@ -138,7 +119,7 @@ done
 ./setup --help           # ajuda
 ```
 
-> **Atualizar skills:** `cd ~/.claude/skills/scaling-skills && git pull && ./setup`
+> **Atualizar skills:** `cd ~/.claude/skills/scaling-skills && git pull && ./setup`\n> Para validar antes de alterar os destinos: `./setup --doctor`.
 
 ---
 
