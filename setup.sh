@@ -14,7 +14,7 @@
 # com o runtime correto para cada ambiente detectado.
 #
 # Uso:
-#   ./setup [--all] [--claude] [--vscode] [--kiro] [--opencode] [--codex]
+#   ./setup [--all] [--claude] [--vscode] [--kiro] [--opencode] [--codex] [--codex]
 #   ./setup --doctor
 #   ./setup --copy
 #   ./setup --uninstall
@@ -378,7 +378,7 @@ detect_and_install() {
   fi
 
   if [ "$found" -eq 0 ]; then
-    printf "%s\n" "Nenhum runtime detectado. Use --claude, --vscode, --kiro ou --opencode."
+    printf "%s\n" "Nenhum runtime detectado. Use --claude, --vscode, --kiro, --opencode ou --codex."
     return 1
   fi
 }
@@ -467,6 +467,7 @@ case "$ACTION" in
     is_vscode_detected && { uninstall_from "$HOME/.copilot/skills"; uninstall_gsd "copilot" "VS Code/Copilot" || true; }
     is_kiro_detected && uninstall_from "$HOME/.kiro/skills"
     is_opencode_detected && { uninstall_from "$HOME/.config/opencode/skills"; uninstall_gsd "opencode" "Opencode" || true; }
+    is_codex_detected && { uninstall_from "${CODEX_HOME:-$HOME/.codex}/skills"; uninstall_gsd "codex" "Codex" || true; }
     exit 0
     ;;
 esac
