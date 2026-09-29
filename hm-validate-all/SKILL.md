@@ -290,6 +290,12 @@ Exceção que não admite ponderação: **dado em risco e CRÍTICO** mesmo que s
 | Performance | `/hm-performance` (número medido) | `/hm-qa` check 8 e `/hm-engineer` são scan raso — mantém o número do performance |
 | Integridade de dados | `/hm-data-integrity` | `/hm-qa` seção 6 e `/hm-deploy` são scan raso |
 | Container / secrets | `/hm-security` D1 e D7 | `/hm-engineer` e `/hm-deploy` corroboram |
+| Supply chain / artefatos | `/hm-security` D6 | `/hm-engineer` faz scan raso e encaminha |
+| Condições excepcionais / estados / retry semântica | `/hm-state-machine` | `/hm-engineer` define causa e regra técnica; `hm-error-feedback` apresenta; `hm-logger` observa |
+| Idempotência / contrato de API e webhook | `/hm-api-contract` | `/hm-state-machine` valida transições; `hm-data-integrity` valida enforcement no banco |
+| Performance / capacidade / saturação | `/hm-performance` | `/hm-engineer` faz scan raso; `hm-qa` valida comportamento |
+| Migration / compatibilidade de schema | `/hm-data-integrity` | `/hm-deploy` valida ordem e rollout; `/hm-engineer` corrobora |
+| Rollout / runtime / shutdown | `/hm-deploy` | `/hm-engineer` corrobora; `/hm-state-machine` valida estados assíncronos |
 | Visual vs decisão | `/hm-designer` (visual), `/hm-ux-flow` (decisão) | Não se sobrepõem — se um finding e sobre pixel, e designer; sobre ordem de decisão, e ux-flow |
 | Estratégia | `/hm-align` (isso deveria existir?), `/hm-sequoia` (aponta pro futuro?) | Complementares |
 | Produto | `/hm-product` | `/hm-align` valida direção; `hm-analytics` valida resultado observado |
