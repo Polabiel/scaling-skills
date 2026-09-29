@@ -54,6 +54,7 @@ O `setup` detecta o sistema operacional e os runtimes instalados e instala as sk
 | **VS Code/Copilot** | `~/.copilot/skills/` | symlink |
 | **Kiro** | `~/.kiro/skills/` | cópia |
 | **Opencode** | `~/.config/opencode/skills/` | symlink |
+| **Codex** | `$CODEX_HOME/skills/` (padrão `~/.codex/skills/`) | symlink |
 
 > **Por que o Kiro usa cópia?** O Kiro IDE não segue symlinks em `~/.kiro/skills/` (issue [kirodotdev/Kiro#6401](https://github.com/kirodotdev/Kiro/issues/6401)). Por isso o setup copia as pastas para o Kiro — se você atualizar o repositório, rode o `setup` de novo para sincronizar.
 >
@@ -97,7 +98,18 @@ done
 ```bash
 git clone https://github.com/Polabiel/scaling-skills ~/.config/opencode/skills/scaling-skills
 for d in ~/.config/opencode/skills/scaling-skills/*/; do
-  ln -s "$d" ~/.config/opencode/skills/"$(basename "$d")"
+  [ -f "$d/SKILL.md" ] && ln -s "$d" ~/.config/opencode/skills/"$(basename "$d")"
+done
+```
+
+### Codex
+
+O Codex pesquisa skills globais em `$CODEX_HOME/skills/`. Quando `CODEX_HOME` não está definido, o caminho padrão é `~/.codex/skills/`.
+
+```bash
+git clone https://github.com/Polabiel/scaling-skills "${CODEX_HOME:-$HOME/.codex}/skills/scaling-skills"
+for d in "${CODEX_HOME:-$HOME/.codex}/skills/scaling-skills"/*/; do
+  [ -f "$d/SKILL.md" ] && ln -s "$d" "${CODEX_HOME:-$HOME/.codex}/skills/"$(basename "$d")"
 done
 ```
 
@@ -112,6 +124,7 @@ done
 ./setup --vscode
 ./setup --kiro
 ./setup --opencode
+./setup --codex
 ./setup --copy
 ./setup --doctor
 ./setup --list
@@ -129,7 +142,7 @@ done
 
 As skills são ativadas automaticamente pelo agente quando a descrição corresponde ao contexto — ou invocadas como slash command:
 
-- **Claude Code / VS Code / Opencode:** `/hm-security`, `/hm-qa`, `/hm-validate-all`, etc.
+- **Claude Code / VS Code / Opencode / Codex:** `/hm-security`, `/hm-qa`, `/hm-validate-all`, etc.
 - **Kiro:** digite o nome da skill no chat ou importe via painel *Agent Steering & Skills*.
 
 A skill `hm-validate-all` orquestra as demais: rode-a antes de qualquer ship para produção.
