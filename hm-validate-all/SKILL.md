@@ -29,6 +29,8 @@ Os 5 checks obrigatorios do baseline-ready (do `~/.claude/CLAUDE.md` global) já
 
 Se qualquer um dos 5 falhar, veredicto e BLOQUEADO. Sem exceção. Owner não valida produto enquanto baseline não esta verde.
 
+> **Nota — Product Management:** `pm-strategy`, `pm-technical`, `pm-ops`, `pm-data` e `pm-growth` são skills de planejamento, decisão e operação de produto. Não são gates obrigatórios de ship por padrão; use-as durante discovery, planejamento, priorização, definição de métricas e operação. Para validação do artefato já construído, mantenha os gates das skills `hm-*` especializadas.
+
 ## Quando usar
 
 - Antes de qualquer ship pra produção (interno ou externo)
@@ -76,6 +78,7 @@ Antes de despachar, varra o repo e decida o que roda. Sinais concretos — não 
 - **Dados** (`/hm-data-integrity`): schema Prisma/Drizzle/Knex, dir de migrations, `better-sqlite3`, Postgres/Supabase, SDK de S3/blob, escrita em `userData`
 - **Performance** (`/hm-performance`): build de frontend (Next/Vite/Webpack), endpoint HTTP user-facing, ou qualquer call de LLM
 - **Interface** (`/hm-designer`): `.tsx`/`.vue`/`.svelte` com componente visual, CSS/Tailwind. Headless ou lib pura → N/A
+- **Design system** (`/hm-design-system`): tokens, primitives, componentes compartilhados, UI library ou padrões reutilizáveis alterados
 - **Fluxo** (`/hm-ux-flow`): qualquer jornada de 2+ passos, incluindo CLI interativo
 - **Deploy** (`/hm-deploy`): `Dockerfile`, workflow de CI, `vercel.json`, config de `electron-builder`/Tauri, publicação npm
 - **API** (`/hm-api-contract`): OpenAPI/JSON Schema, routers, controllers, webhooks, SDK clients, DTOs ou mudanças de resposta
@@ -154,14 +157,15 @@ Gate: qualquer um dos 5 checks de baseline falhando = BLOQUEADO. Sem compensaç�
 15. `/hm-accessibility` — teclado, foco, semântica e status quando existe UI
 16. `/hm-copy` — clareza e consistência da copy quando existe copy relevante
 17. `/hm-conversion` — fricção de conversão quando aplicável
-18. `/hm-designer` — design polish vale após funcional + fluxo resolvido
+18. `/hm-design-system` — tokens/componentes/padrões compartilhados quando aplicável
+19. `/hm-designer` — design polish vale após funcional + fluxo resolvido
 
 **Onda 5 — Entrega**
-19. `/hm-deploy` — deploy gate só importa após tudo acima OK
+20. `/hm-deploy` — deploy gate só importa após tudo acima OK
 
 **Onda 6 — Incident / Council (condicional)**
-20. `/hm-incident` — só em remediação de incidente ou pós-incidente
-21. `council` — só se um dos gatilhos da seção Council disparar
+21. `/hm-incident` — só em remediação de incidente ou pós-incidente
+22. `council` — só se um dos gatilhos da seção Council disparar
 
 **Exceção:** se o ship e urgente e o owner pediu "valida tudo", roda tudo mesmo com criticos no caminho — pra ter mapa completo do estado, não pra shippar. Owner decide.
 
@@ -240,7 +244,7 @@ Triads úteis aqui: `ship-now` (torvalds, feynman, aurelius — correção prát
 
 ## Tradução de severidade
 
-As 21 skills de validação falam vocabulários diferentes. Traduza pra escala comum (CRÍTICO / ALTO / MEDIO / BAIXO) antes de consolidar:
+As skills de validação falam vocabulários diferentes. Traduza pra escala comum (CRÍTICO / ALTO / MEDIO / BAIXO) antes de consolidar:
 
 | Skill | Vocabulário nativo | Tradução |
 |---|---|---|
@@ -255,6 +259,7 @@ As 21 skills de validação falam vocabulários diferentes. Traduza pra escala c
 | `/hm-performance` | PASS/FAIL por métrica + Performance OK / OPTIMIZE | Os 4 bloqueios da skill (bundle 2x do alvo, índice faltando em query quente, p99 >1s user-facing, memory leak em processo background) = ALTO bloqueante. Resto = MEDIO |
 | `/hm-ux-flow` | PASS / OPTIMIZE / REDESIGN por fluxo | REDESIGN em fluxo crítico = ALTO. OPTIMIZE = MEDIO. Empty state faltando = MEDIO. Spinner genérico = BAIXO |
 | `/hm-designer` | Atende a barra / reprovou + issues | Reprovou em tela de fluxo crítico = ALTO. Resto = MEDIO/BAIXO conforme o princípio violado |
+| `/hm-design-system` | System-ready / Precisa revisão / BLOQUEADO | Componentes compartilhados sem contrato, acessibilidade ou versionamento = ALTO conforme impacto |
 | `/hm-deploy` | OK/falhou por área + Pronto pra deploy / X issues | Secret exposto ou dado em risco = CRÍTICO (regra da skill). Não sobe do zero = ALTO. Resto = MEDIO |
 | `/hm-product` | Bem definido / Precisa discovery / BLOQUEADO | Problema/usuário indefinidos em feature nova = ALTO; caso contrário, reporta gap |
 | `/hm-api-contract` | Contract-ready / BLOQUEADO | Breaking contract ou divergência schema/runtime = ALTO |
@@ -294,6 +299,7 @@ Exceção que não admite ponderação: **dado em risco e CRÍTICO** mesmo que s
 | Copy | `/hm-copy` | `hm-conversion` valida fricção; `hm-designer` composição |
 | Conversão | `/hm-conversion` | `hm-analytics` mede; `hm-product` valida problema |
 | Acessibilidade | `/hm-accessibility` | `hm-designer` composição; `hm-qa` valida comportamento |
+| Design system | `/hm-design-system` | `hm-designer` valida tela; `hm-accessibility` valida a11y; `hm-qa` valida comportamento |
 
 ## Consolidacao do output
 
