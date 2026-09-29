@@ -774,6 +774,374 @@ Se a causa técnica for relevante:
 
     error: serializeError(err)
 
+
+# Guia Grafana + Loki
+
+O `hm-logger` deve produzir logs que sejam bons não apenas no código, mas também no **Grafana Explore, Loki, dashboards, alertas e correlação com traces**.
+
+Loki organiza streams por labels e recomenda mantê-las com baixa cardinalidade. Valores como `traceId`, `userId`, `customerId`, `orderId`, IP e outros identificadores altamente variáveis devem ficar como conteúdo estruturado ou **structured metadata**, não como labels indexadas. Isso reduz fragmentação de streams, custo e problemas de performance. Fonte: https://grafana.com/docs/loki/latest/get-started/labels/cardinality/
+
+## Contrato recomendado para Loki
+
+Uma saída JSON de aplicação deve permitir que o Grafana filtre rapidamente por origem, enquanto os detalhes permanecem estruturados:
+
+```json
+{
+  "timestamp": "2026-09-29T03:12:44.123Z",
+  "level": "error",
+  "service_name": "chatvolt-api",
+  "environment": "production",
+  "eventName": "payment.charge.failed",
+  "message": "Falha ao processar cobrança",
+  "traceId": "0242ac120002",
+  "spanId": "89f2",
+  "requestId": "req_123",
+  "correlationId": "checkout_456",
+  "actor": {
+    "type": "user",
+    "id": "usr_789",
+    "orgId": "org_321"
+  },
+  "http": {
+    "method": "POST",
+    "route": "/api/payments/charge",
+    "statusCode": 402
+  },
+  "outcome": "failure",
+  "durationMs": 842,
+  "attributes": {
+    "provider": "stripe",
+    "operation": "charge",
+    "retryable": false
+  },
+  "error": {
+    "type": "CardDeclinedError",
+    "code": "card_declined",
+    "message": "Pagamento recusado"
+  }
+}
+```
+
+### O que vira label Loki
+
+Use poucas labels, estáveis e de baixa cardinalidade, por exemplo:
+
+```text
+service_name
+environment
+cluster
+namespace
+container
+region
+```
+
+Dependendo da infraestrutura, `service_name`, `service_namespace`, cluster/namespace e outros atributos de origem podem ser promovidos para labels. A documentação atual do Loki recomenda selecionar apenas os atributos de recurso necessários como index labels e manter o restante como structured metadata. Fonte: https://grafana.com/docs/loki/latest/send-data/otel/
+
+### O que NÃO vira label por padrão
+
+Nunca promova automaticamente:
+
+```text
+traceId
+spanId
+requestId
+correlationId
+userId
+orgId
+customerId
+orderId
+jobId
+messageId
+ip
+email
+URL completa
+erro.message
+stack
+prompt
+```
+
+Loki recomenda explicitamente não usar trace ID, order ID ou user ID como labels indexadas. Para esses casos, use structured metadata. Fonte: https://grafana.com/docs/loki/latest/get-started/labels/cardinality/
+
+## Structured metadata
+
+Use structured metadata para metadata frequentemente consultada, mas de alta cardinalidade, como `trace_id`, `span_id`, `request_id`, `correlation_id`, `user_id`, `org_id`, `job_id` e `provider_event_id`.
+
+Structured metadata não cria novos streams e continua disponível para filtros no LogQL. Para ingestão OTLP, structured metadata é parte importante do modelo moderno do Loki. Fonte: https://grafana.com/docs/loki/latest/get-started/labels/structured-metadata/
+
+**Pré-requisito:** valide a configuração do Loki antes de assumir suporte a structured metadata; a documentação relaciona o recurso ao chunk format V4, schema adequado e TSDB. Fonte: https://grafana.com/docs/loki/latest/get-started/labels/structured-metadata/
+
+## Compatibilidade com OpenTelemetry
+
+Quando o projeto usa OpenTelemetry Collector ou Grafana Alloy:
+- prefira resource attributes para identificar o serviço;
+- mantenha `service.name`, `service.namespace` e `deployment.environment.name` coerentes;
+- deixe atributos de alta cardinalidade fora das index labels;
+- permita que o collector/Loki faça o mapeamento para structured metadata.
+
+O Loki atual promove automaticamente determinados resource attributes de OpenTelemetry para labels e mantém os demais como structured metadata. Como o Loki tem limite de labels indexadas, não promova todos os atributos. Fonte: https://grafana.com/docs/loki/latest/send-data/otel/
+
+## Nomenclatura para Grafana
+
+Para facilitar consultas:
+- `eventName` deve ser estável;
+- `outcome` deve ter valores limitados;
+- `level` deve ser um valor limitado;
+- `statusCode` deve ser numérico;
+- `durationMs` deve ser numérico;
+- `error.type` e `error.code` devem ser categorizáveis;
+- IDs devem ficar como metadata;
+- não coloque valores dinâmicos dentro de `message`.
+
+O Loki também pode descobrir níveis de log automaticamente e armazená-los como structured metadata quando habilitado. Não crie uma label dinâmica de `level` só para facilitar filtro; a própria documentação do Loki recomenda evitar labels dinâmicas desnecessárias. Fontes: https://grafana.com/docs/loki/latest/configure/ e https://grafana.com/docs/loki/latest/get-started/labels/bp-labels/
+
+## LogQL: consultas que a skill deve saber produzir
+
+### Todos os erros de um serviço
+
+```logql
+{service_name="chatvolt-api", environment="production"} | json | level="error"
+```
+
+### Um evento específico
+
+```logql
+{service_name="chatvolt-api", environment="production"} | json | eventName="payment.charge.failed"
+```
+
+### Uma ocorrência por trace
+
+Quando `trace_id` estiver em structured metadata:
+
+```logql
+{service_name="chatvolt-api", environment="production"} | trace_id="0242ac120002"
+```
+
+Se o trace estiver dentro do JSON do log, faça parsing antes do filtro:
+
+```logql
+{service_name="chatvolt-api", environment="production"} | json | traceId="0242ac120002"
+```
+
+### Erros por evento
+
+```logql
+sum by (eventName) (count_over_time({service_name="chatvolt-api", environment="production"} | json | level="error" [5m]))
+```
+
+### Taxa de erros para alertas
+
+```logql
+sum(rate({service_name="chatvolt-api", environment="production"} | json | level="error" [5m]))
+```
+
+### Requests lentas
+
+Se `durationMs` estiver no formato numérico aceito pelo parser, filtre no pipeline e adapte a unidade ao formato real:
+
+```logql
+sum(count_over_time({service_name="chatvolt-api", environment="production"} | json | durationMs > 1000 [5m]))
+```
+
+### Falhas de integração
+
+```logql
+sum by (provider) (count_over_time({service_name="chatvolt-api", environment="production"} | json | eventName=~"integration.*" | outcome="failure" [10m]))
+```
+
+LogQL oferece `rate`, `count_over_time`, `bytes_rate`, `bytes_over_time` e `absent_over_time` para transformar logs em séries numéricas úteis para dashboards e alertas. Fonte: https://grafana.com/docs/loki/latest/query/metric_queries/
+
+## Grafana Explore: o log precisa ser investigável
+
+Ao abrir uma linha no Explore, deve ser fácil responder:
+
+**O que aconteceu?** `eventName`, `message`, `outcome`
+
+**Quem estava envolvido?** `actor.type`, `actor.id`, `actor.orgId`
+
+**Onde aconteceu?** `service_name`, `environment`, `http.route`
+
+**Qual operação?** `requestId`, `correlationId`, `jobId`
+
+**Como encontro o trace?** `traceId`, `spanId`
+
+**O que falhou?** `error.type`, `error.code`, `error.message`
+
+## Grafana → Tempo: correlação de logs com traces
+
+Uma implementação madura deve permitir navegar:
+
+```text
+Grafana Log
+   ↓ traceId
+Tempo Trace
+   ↓ spanId
+Span / ação
+```
+
+Grafana suporta **derived fields** para extrair um trace ID de logs e criar um link para o datasource de tracing. O trace precisa existir no backend de traces, como Tempo, e o valor extraído precisa corresponder ao trace ID armazenado nele. Fonte: https://grafana.com/docs/grafana/latest/datasources/loki/configure/
+
+### Regra prática
+
+O log precisa ter um campo de trace claramente identificável e estável. Use um único padrão entre serviços sempre que possível (`traceId`, `trace_id` ou `traceID`). Para formatos legados diferentes, configure derived fields específicos em vez de criar labels de alta cardinalidade. Fonte: https://grafana.com/docs/grafana/latest/datasources/tempo/configure-tempo-data-source/configure-trace-to-logs/
+
+## Grafana → usuário
+
+Quando `hm-error-feedback` fornecer ao usuário um código de referência, esse código deve apontar para uma correlação técnica segura.
+
+Exemplo:
+
+```text
+Usuário:
+"Não foi possível concluir o pagamento.
+ Código de referência: 0242ac120002"
+
+Grafana/Loki:
+traceId=0242ac120002
+
+Tempo:
+traceId=0242ac120002
+```
+
+Não use e-mail, CPF, cartão ou outro dado pessoal como código de referência.
+
+## Dashboards que o hm-logger deve suportar
+
+### Saúde da aplicação
+- volume de logs por serviço;
+- erros por minuto;
+- warnings por minuto;
+- distribuição por outcome;
+- serviços que deveriam estar emitindo logs, mas pararam.
+
+### API
+- erros 4xx/5xx;
+- operações lentas;
+- latência por rota quando disponível;
+- falhas por endpoint.
+
+### Integrações
+- sucesso/falha por provider;
+- timeout por provider;
+- retries;
+- falhas externas.
+
+### Jobs
+- jobs processados;
+- jobs falhos;
+- retries;
+- jobs presos ou sem progresso.
+
+### IA
+- tool calls falhas;
+- timeouts;
+- limites de tokens;
+- erros por provider/modelo;
+- custo agregado, quando disponível.
+
+## Alertas Grafana
+
+O `hm-logger` deve estruturar eventos de modo que o time consiga criar alertas sem regex frágil.
+
+Prefira:
+
+```text
+eventName + outcome + statusCode + error.code
+```
+
+a depender de texto livre como:
+
+```text
+"Falha ao salvar coisa X..."
+```
+
+Alertas possíveis:
+- taxa de `*.failed` acima do baseline;
+- HTTP 5xx sustentado;
+- timeout de integração;
+- aumento de `payment.charge.failed`;
+- job failure rate;
+- ausência de logs de um serviço esperado.
+
+Grafana recomenda testar a query no Explore antes de transformá-la em alert rule e usar um pending period para reduzir falsos positivos de picos transitórios. Fonte: https://grafana.com/docs/grafana/latest/datasources/loki/alerting/
+
+### Não alertar em cima de uma única linha
+
+Evite:
+
+```text
+"se apareceu error, alerta"
+```
+
+Prefira:
+
+```text
+rate/count em janela temporal
++ threshold
++ pending period
+```
+
+Uma query de logs simples retorna linhas; alertas precisam de uma **LogQL metric query** que produza dados numéricos, como `rate` ou `count_over_time`. Fonte: https://grafana.com/docs/grafana/latest/datasources/loki/alerting/
+
+## Saúde do próprio pipeline de logs
+
+Observabilidade também precisa observar o observador.
+
+Em ambientes Loki, monitore:
+- logs descartados;
+- bytes descartados;
+- rate limit;
+- erros de ingestão;
+- cardinalidade de streams;
+- tamanho excessivo de structured metadata;
+- problemas de query.
+
+Loki expõe métricas como `loki_discarded_samples_total` e `loki_discarded_bytes_total` e recomenda alertas/dashboards para detectar rejeições de ingestão e rate limits. Fonte: https://grafana.com/docs/loki/latest/operations/request-validation-rate-limits/
+
+## Regra de arquitetura para Grafana/Loki
+
+Pense em três camadas:
+
+```text
+LABELS
+↓
+origem estável e baixa cardinalidade
+
+STRUCTURED METADATA
+↓
+campos pesquisáveis de alta cardinalidade
+
+LOG BODY
+↓
+detalhes ricos do evento
+```
+
+Exemplo:
+
+```text
+Labels:
+service_name=chatvolt-api
+environment=production
+namespace=chatvolt
+
+Structured metadata:
+trace_id=...
+span_id=...
+user_id=...
+org_id=...
+request_id=...
+job_id=...
+
+Body JSON:
+eventName
+outcome
+http
+error
+attributes
+message
+```
+
+**Não inverter essas camadas.**
+
 ## Anti-patterns críticos
 
 Rejeite imediatamente:
