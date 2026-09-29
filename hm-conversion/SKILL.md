@@ -230,6 +230,138 @@ If analytics are available, ask for or inspect:
 
 Use measured product data to validate hypotheses whenever possible.
 
+
+## Evidence-backed conversion principles
+
+Use these as **evidence-backed heuristics**, not universal laws. Effects depend on product, audience, device, intent, traffic source, and implementation. Validate consequential recommendations with the product's own analytics or experiments.
+
+### 1. Reduce unnecessary checkout complexity
+
+Baymard's 2026 checkout research reports that 17% of US online shoppers said they had abandoned an order in the previous quarter because the checkout was too long or complicated. Its benchmark found an average of 23.48 form elements displayed by default, while its usability research found many checkouts can be reduced to roughly 12–14 elements (7–8 actual fields).
+
+**Design implication:** minimize fields and decision points that are not necessary to complete the immediate action. Do not optimize merely for fewer "steps"; the amount of information the user must process and enter matters more.
+
+**Source:** Baymard Institute — "Reasons for Cart Abandonment" and "Checkout Optimization: Minimize Form Fields".
+
+### 2. Treat unnecessary scrolling as friction in high-intent surfaces
+
+The evidence does **not** establish that every scrollable modal lowers conversion. The defensible rule is narrower:
+
+> When the primary action or decision-critical information is hidden behind unnecessary scrolling, the interface introduces additional interaction cost at a high-intent moment.
+
+NN/G reports that users allocate less attention to content below the fold and documents excessive scrolling problems on mobile.
+
+**Design implication:** for signup, upgrade, checkout, purchase, and lead-capture modals, first try to keep the decision context and primary CTA accessible without internal scrolling. If the content genuinely cannot fit, use progressive disclosure, a persistent action area, or a dedicated multi-step/page flow.
+
+This is a **heuristic**, not a claim of a fixed conversion uplift.
+
+**Sources:** Nielsen Norman Group — "Scrolling and Scrollbars"; "Mobile Web 2009 = Desktop Web 1998".
+
+### 3. Modal dialogs have an interaction-cost tax
+
+NN/G describes modal dialogs as interruptions that require immediate attention, interrupt workflow, can cause context loss, and add an extra goal: dismissing or completing the dialog. NN/G specifically recommends avoiding unnecessary modals in high-stakes processes such as checkout.
+
+**Design implication:** a conversion modal must justify its interruption. If the user needs complex research or information outside the modal to make the decision, prefer a page or nonmodal flow.
+
+**Source:** Nielsen Norman Group — "Modal & Nonmodal Dialogs: When (& When Not) to Use Them".
+
+### 4. Simplify forms, but do not worship a field-count rule
+
+NN/G cites a CHI study in which forms following basic usability guidelines produced 78% first-try submissions versus 42% for forms violating those guidelines. NN/G also emphasizes that removing a field can improve completion, but the business value of the information collected must be considered.
+
+Baymard similarly finds that form-field count has a larger impact on checkout usability than the number of checkout steps.
+
+**Design implication:** eliminate fields that do not support the immediate user or business goal; automate information where possible; defer optional data collection until after the primary conversion.
+
+**Sources:** Nielsen Norman Group — "Website Forms Usability"; Baymard Institute — "Checkout Optimization: Minimize Form Fields".
+
+### 5. Make labels and error recovery persistent
+
+NN/G's form research finds that placeholder-only labels make it harder to remember what belongs in a field, review entered information, and recover from errors. Baymard's checkout testing likewise links unclear required/optional field treatment to validation errors, confusion, slower checkout, and abandonment.
+
+**Design implication:** use persistent labels, explicit required/optional states where appropriate, inline/local error messages, and recovery paths that preserve entered data.
+
+**Sources:** Nielsen Norman Group — "Placeholders in Form Fields Are Harmful"; Baymard Institute — "Required and Optional Form Fields".
+
+### 6. Optimize perceived effort, not arbitrary step count
+
+Baymard explicitly warns that the number of checkout steps is a poor optimization target by itself. A longer flow can be usable when each step is focused; a short flow can still be difficult when each screen contains too many fields or decisions.
+
+**Design implication:** evaluate fields, choices, typing, scrolling, context switches, error recovery, uncertainty, and repeated information.
+
+Do not apply "one page is always better" or "fewer steps is always better" as blanket rules.
+
+**Source:** Baymard Institute — "Checkout Optimization: Minimize Form Fields".
+
+### 7. Speed is part of conversion design
+
+Google/SOASTA's 2017 mobile research found that as page load time increased from 1 second to 3 seconds, the probability of bounce increased 32%; from 1 to 5 seconds it increased 90%. These are historical aggregate mobile findings, not a universal conversion curve.
+
+**Design implication:** treat loading performance as part of the conversion experience. Measure real-user performance and prioritize delays that occur immediately before or during a conversion action.
+
+**Source:** Google/SOASTA mobile page-speed research, 2017.
+
+### 8. A/B tests can overturn UX "best practices"
+
+HubSpot documented an experiment where a two-column lead form converted 22% better than its one-column variant at a 99% confidence level. HubSpot explicitly notes that the result was specific to its long 13-field form and should not be generalized into "two columns are better."
+
+VWO publishes case studies where redesigns produced measurable changes, including ForestView's reported 20.45% mobile form-conversion increase after reducing up/down scrolling and changing product navigation.
+
+**Design implication:** use research to generate hypotheses, not to skip experimentation. A convention that is usually helpful can lose when the task, content density, audience, or business objective changes.
+
+**Sources:** HubSpot — "Disproving Best Practices: The One- vs. Two-Column Form Test"; VWO — "ForestView improved form conversion by 20.45%".
+
+### 9. Use business-specific evidence before declaring a conversion win
+
+A reported uplift from a vendor case study is evidence about that experiment, not a transferable percentage.
+
+When validating a change, prefer:
+1. controlled A/B test with a defined primary metric
+2. segmented results by device and traffic intent
+3. funnel-level metrics rather than only clicks
+4. statistical uncertainty/confidence reported by the experiment platform
+5. downstream business outcomes, not just micro-conversions
+
+Useful metrics:
+- exposure → CTA click
+- CTA click → completion
+- form start → completion
+- step-to-step drop-off
+- mobile vs desktop completion
+- error rate
+- time to completion
+- revenue per visitor / qualified lead rate when relevant
+
+## Evidence hierarchy
+
+When making a conversion recommendation, weigh evidence in this order:
+
+1. **Product experiment or behavioral data from the actual interface**
+2. **Direct usability testing with the target audience**
+3. **Large-scale independent UX research**
+4. **Peer-reviewed academic research**
+5. **Vendor case studies with disclosed methodology**
+6. **Expert heuristics**
+7. **Designer intuition**
+
+Do not present levels 5–7 as if they were causal proof.
+
+## What this evidence does NOT justify
+
+Do not encode these as universal rules:
+
+- "Every modal must never scroll."
+- "Everything must be above the fold."
+- "Fewer form fields always means more revenue."
+- "One-column forms always convert better."
+- "Fewer checkout steps always convert better."
+- "A particular CTA color increases conversion."
+- "A UX change will increase conversion by a specific percentage."
+
+Instead, encode the underlying mechanism:
+
+**Reduce unnecessary effort, preserve decision context, make the primary action easy to discover and execute, and validate consequential changes with real user data.**
+
 ## Output format
 
 For a conversion-focused review, use:
