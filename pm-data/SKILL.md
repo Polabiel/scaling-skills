@@ -1,6 +1,6 @@
 ---
 name: pm-data
-description: Gestão de produto orientada por dados: métricas, tracking plan, taxonomia, qualidade, governança, identidade, experimentos e decisões quantitativas. Use quando uma decisão de produto depende de analytics, instrumentação, KPI, funil, retenção, segmentação ou experimento. Complementa hm-analytics, hm-state-machine, hm-security e pm-strategy.
+description: "Gestão de produto orientada por dados: métricas, tracking plan, taxonomia, qualidade, governança, identidade, experimentos e decisões quantitativas. Use quando uma decisão de produto depende de analytics, instrumentação, KPI, funil, retenção, segmentação ou experimento. Complementa hm-analytics, hm-state-machine, hm-security e pm-strategy."
 ---
 
 # /pm-data — Product Data (v1)
