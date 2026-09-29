@@ -65,7 +65,12 @@ for skill in "${SKILLS[@]}"; do
   [ -f "$CLAUDE_ROOT/$skill/SKILL.md" ] || fail "Claude Code discovery: $skill não está acessível"
 done
 
-claude_count="$(find "$CLAUDE_ROOT" -mindepth 2 -maxdepth 2 -type f -name 'SKILL.md' | wc -l | tr -d ' ')"
+claude_count=0
+for skill in "${SKILLS[@]}"; do
+  [ -f "$CLAUDE_ROOT/$skill/SKILL.md" ] || fail "Claude Code discovery: $skill não está acessível"
+  claude_count=$((claude_count + 1))
+done
+
 [ "$claude_count" -eq "${#SKILLS[@]}" ] || fail "Claude Code discovery: esperado ${#SKILLS[@]}, encontrado $claude_count"
 pass "Claude Code discovery contract: $claude_count skills"
 
@@ -80,7 +85,12 @@ for skill in "${SKILLS[@]}"; do
   [ -f "$COPILOT_ROOT/$skill/SKILL.md" ] || fail "VS Code/Copilot discovery: $skill não está acessível"
 done
 
-copilot_count="$(find "$COPILOT_ROOT" -mindepth 2 -maxdepth 2 -type f -name 'SKILL.md' | wc -l | tr -d ' ')"
+copilot_count=0
+for skill in "${SKILLS[@]}"; do
+  [ -f "$COPILOT_ROOT/$skill/SKILL.md" ] || fail "VS Code/Copilot discovery: $skill não está acessível"
+  copilot_count=$((copilot_count + 1))
+done
+
 [ "$copilot_count" -eq "${#SKILLS[@]}" ] || fail "VS Code/Copilot discovery: esperado ${#SKILLS[@]}, encontrado $copilot_count"
 pass "VS Code/Copilot discovery contract: $copilot_count skills"
 
