@@ -2,7 +2,7 @@
 
 Minhas skills baseadas na Filosofia Higher Mind e nas minhas experiências com código como dev.
 
-Coleção de **31 skills** para agentes de IA (padrão [Agent Skills](https://agentskills.io) — uma pasta com `SKILL.md`):
+Coleção de **32 skills** para agentes de IA (padrão [Agent Skills](https://agentskills.io) — uma pasta com `SKILL.md`):
 
 | Skill | O que faz |
 |---|---|
@@ -30,6 +30,7 @@ Coleção de **31 skills** para agentes de IA (padrão [Agent Skills](https://ag
 | [`hm-design-system`](hm-design-system/SKILL.md) | Governança de tokens, componentes, padrões, acessibilidade e evolução do design system |
 | [`pm-data`](pm-data/SKILL.md) | Gestão de produto orientada por dados, métricas, tracking e governança |
 | [`pm-growth`](pm-growth/SKILL.md) | Growth de produto: aquisição, ativação, retenção, monetização e experimentação |
+| [`pm-innovation`](pm-innovation/SKILL.md) | Inovação técnica, evolução arquitetural, performance preventiva, experimentos e capacidade futura |
 | [`pm-ops`](pm-ops/SKILL.md) | Product Operations: processos, feedback, handoffs, launch e operação |
 | [`pm-strategy`](pm-strategy/SKILL.md) | Estratégia de produto, outcomes, apostas, prioridades e roadmap |
 | [`pm-technical`](pm-technical/SKILL.md) | Gestão técnica de produto, viabilidade, dívida, arquitetura e NFRs |
