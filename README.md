@@ -50,15 +50,15 @@ O `setup` detecta o sistema operacional e os runtimes instalados e instala as sk
 
 | Ferramenta | Diretório | Modo |
 |---|---|---|---|
-| **Claude Code** | `~/.claude/skills/` | symlink |
-| **VS Code/Copilot** | `~/.copilot/skills/` | symlink |
+| **Claude Code** | `~/.claude/skills/` | cópia |
+| **VS Code/Copilot** | `~/.copilot/skills/` | cópia |
 | **Kiro** | `~/.kiro/skills/` | cópia |
-| **Opencode** | `~/.config/opencode/skills/` | symlink |
-| **Codex** | `$CODEX_HOME/skills/` (padrão `~/.codex/skills/`) | symlink |
+| **Opencode** | `~/.config/opencode/skills/` | cópia |
+| **Codex** | `$CODEX_HOME/skills/` (padrão `~/.codex/skills/`) | cópia |
 
-> **Por que o Kiro usa cópia?** O Kiro IDE não segue symlinks em `~/.kiro/skills/` (issue [kirodotdev/Kiro#6401](https://github.com/kirodotdev/Kiro/issues/6401)). Por isso o setup copia as pastas para o Kiro — se você atualizar o repositório, rode o `setup` de novo para sincronizar.
+> O setup copia as pastas das skills para os diretórios nativos. Isso deixa cada instalação com os arquivos reais do repositório, sem depender de symlinks.
 >
-> **VS Code/Copilot** recebe as skills em `~/.copilot/skills/`, seu diretório pessoal nativo.
+> **Atualização:** rode o `setup` novamente para sincronizar uma instalação existente.
 
 ---
 
@@ -69,17 +69,21 @@ O `setup` detecta o sistema operacional e os runtimes instalados e instala as sk
 ### Claude Code
 
 ```bash
-git clone https://github.com/Polabiel/scaling-skills ~/.claude/skills/scaling-skills
-for d in ~/.claude/skills/scaling-skills/*/; do
-  ln -s "$d" ~/.claude/skills/"$(basename "$d")"
+git clone https://github.com/Polabiel/scaling-skills ~/.scaling-skills
+mkdir -p ~/.claude/skills
+for d in ~/.scaling-skills/*/; do
+  [ -f "$d/SKILL.md" ] && cp -R "$d" ~/.claude/skills/"$(basename "$d")"
 done
 ```
 
 ### Kiro
 
 ```bash
-git clone https://github.com/Polabiel/scaling-skills ~/.kiro/skills/scaling-skills
-cp -R ~/.kiro/skills/scaling-skills/*/ ~/.kiro/skills/
+git clone https://github.com/Polabiel/scaling-skills ~/.scaling-skills
+mkdir -p ~/.kiro/skills
+for d in ~/.scaling-skills/*/; do
+  [ -f "$d/SKILL.md" ] && cp -R "$d" ~/.kiro/skills/"$(basename "$d")"
+done
 ```
 
 ### VS Code/Copilot
@@ -87,18 +91,20 @@ cp -R ~/.kiro/skills/scaling-skills/*/ ~/.kiro/skills/
 O VS Code suporta skills pessoais em `~/.copilot/skills/`.
 
 ```bash
-git clone https://github.com/Polabiel/scaling-skills ~/.copilot/skills/scaling-skills
-for d in ~/.copilot/skills/scaling-skills/*/; do
-  [ -f "$d/SKILL.md" ] && ln -s "$d" ~/.copilot/skills/"$(basename "$d")"
+git clone https://github.com/Polabiel/scaling-skills ~/.scaling-skills
+mkdir -p ~/.copilot/skills
+for d in ~/.scaling-skills/*/; do
+  [ -f "$d/SKILL.md" ] && cp -R "$d" ~/.copilot/skills/"$(basename "$d")"
 done
 ```
 
 ### Opencode
 
 ```bash
-git clone https://github.com/Polabiel/scaling-skills ~/.config/opencode/skills/scaling-skills
-for d in ~/.config/opencode/skills/scaling-skills/*/; do
-  [ -f "$d/SKILL.md" ] && ln -s "$d" ~/.config/opencode/skills/"$(basename "$d")"
+git clone https://github.com/Polabiel/scaling-skills ~/.scaling-skills
+mkdir -p ~/.config/opencode/skills
+for d in ~/.scaling-skills/*/; do
+  [ -f "$d/SKILL.md" ] && cp -R "$d" ~/.config/opencode/skills/"$(basename "$d")"
 done
 ```
 
@@ -107,9 +113,10 @@ done
 O Codex pesquisa skills globais em `$CODEX_HOME/skills/`. Quando `CODEX_HOME` não está definido, o caminho padrão é `~/.codex/skills/`.
 
 ```bash
-git clone https://github.com/Polabiel/scaling-skills "${CODEX_HOME:-$HOME/.codex}/skills/scaling-skills"
-for d in "${CODEX_HOME:-$HOME/.codex}/skills/scaling-skills"/*/; do
-  [ -f "$d/SKILL.md" ] && ln -s "$d" "${CODEX_HOME:-$HOME/.codex}/skills/"$(basename "$d")"
+git clone https://github.com/Polabiel/scaling-skills ~/.scaling-skills
+mkdir -p "${CODEX_HOME:-$HOME/.codex}/skills"
+for d in ~/.scaling-skills/*/; do
+  [ -f "$d/SKILL.md" ] && cp -R "$d" "${CODEX_HOME:-$HOME/.codex}/skills/$(basename "$d")"
 done
 ```
 
