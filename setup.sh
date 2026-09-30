@@ -14,7 +14,7 @@
 # com o runtime correto para cada ambiente detectado.
 #
 # Uso:
-#   ./setup [--all] [--claude] [--vscode] [--kiro] [--opencode] [--codex] [--codex]
+#   ./setup [--all] [--claude] [--vscode] [--kiro] [--opencode] [--codex]
 #   ./setup --doctor
 #   ./setup --copy
 #   ./setup --uninstall
@@ -24,7 +24,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-MODE="link"
+MODE="copy"
 ACTION="install"
 TARGETS=""
 OS_NAME="unknown"
@@ -224,7 +224,12 @@ install_to() {
     dst="$target_dir/$name"
 
     if [ -L "$dst" ] || [ -e "$dst" ]; then
-      if [ "$update_existing" -eq 1 ]; then
+      if [ ! -f "$dst/SKILL.md" ]; then
+        rm -rf "$dst"
+        install_skill "$file" "$target_dir" "$mode"
+        installed=$((installed + 1))
+        printf "  reparado:   %s (destino vazio/incompleto)\n" "$name"
+      elif [ "$update_existing" -eq 1 ]; then
         install_skill "$file" "$target_dir" "$mode"
         installed=$((installed + 1))
         printf "  atualizado: %s\n" "$name"
