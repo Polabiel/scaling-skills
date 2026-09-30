@@ -135,11 +135,7 @@ install_skill() {
     rm -rf "$dst"
   fi
 
-  if [ "$mode" = "copy" ]; then
-    cp -R "$src_dir" "$dst"
-  else
-    ln -s "$src_dir" "$dst"
-  fi
+  cp -R "$src_dir" "$dst"
 }
 
 count_existing_skills() {
@@ -224,11 +220,11 @@ install_to() {
     dst="$target_dir/$name"
 
     if [ -L "$dst" ] || [ -e "$dst" ]; then
-      if [ ! -f "$dst/SKILL.md" ]; then
+      if [ -L "$dst" ] || [ ! -f "$dst/SKILL.md" ]; then
         rm -rf "$dst"
         install_skill "$file" "$target_dir" "$mode"
         installed=$((installed + 1))
-        printf "  reparado:   %s (destino vazio/incompleto)\n" "$name"
+        printf "  reparado:   %s (symlink, vazio ou incompleto)\n" "$name"
       elif [ "$update_existing" -eq 1 ]; then
         install_skill "$file" "$target_dir" "$mode"
         installed=$((installed + 1))
