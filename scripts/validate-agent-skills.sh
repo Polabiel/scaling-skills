@@ -58,7 +58,7 @@ CLAUDE_ROOT="$TMP_ROOT/.claude/skills"
 mkdir -p "$CLAUDE_ROOT"
 
 for skill in "${SKILLS[@]}"; do
-  ln -s "$ROOT/$skill" "$CLAUDE_ROOT/$skill"
+  cp -R "$ROOT/$skill" "$CLAUDE_ROOT/$skill"
 done
 
 for skill in "${SKILLS[@]}"; do
@@ -78,7 +78,7 @@ COPILOT_ROOT="$TMP_ROOT/.copilot/skills"
 mkdir -p "$COPILOT_ROOT"
 
 for skill in "${SKILLS[@]}"; do
-  ln -s "$ROOT/$skill" "$COPILOT_ROOT/$skill"
+  cp -R "$ROOT/$skill" "$COPILOT_ROOT/$skill"
 done
 
 for skill in "${SKILLS[@]}"; do
@@ -98,7 +98,7 @@ OPENCODE_ROOT="$TMP_ROOT/.config/opencode/skills"
 mkdir -p "$OPENCODE_ROOT"
 
 for skill in "${SKILLS[@]}"; do
-  ln -s "$ROOT/$skill" "$OPENCODE_ROOT/$skill"
+  cp -R "$ROOT/$skill" "$OPENCODE_ROOT/$skill"
 done
 
 for skill in "${SKILLS[@]}"; do
@@ -118,7 +118,7 @@ CODEX_ROOT="$TMP_ROOT/.codex/skills"
 mkdir -p "$CODEX_ROOT"
 
 for skill in "${SKILLS[@]}"; do
-  ln -s "$ROOT/$skill" "$CODEX_ROOT/$skill"
+  cp -R "$ROOT/$skill" "$CODEX_ROOT/$skill"
 done
 
 for skill in "${SKILLS[@]}"; do
