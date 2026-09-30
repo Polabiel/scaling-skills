@@ -16,5 +16,8 @@ jobs:
       - name: Validate Agent Skills compatibility
         run: bash scripts/validate-agent-skills.sh
 
+      - name: Validate setup installation
+        run: bash scripts/validate-setup-install.sh
+
       - name: Validate setup doctor
         run: ./setup --doctor
